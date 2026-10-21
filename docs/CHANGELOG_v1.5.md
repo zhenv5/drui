@@ -1,3 +1,5 @@
+> ARCHIVED **internal GameAgentKit** milestone; this label is historical, not the current public DRUI version. Use [Install & Verify](INSTALL_AND_VERIFY.md) for today's GitHub-only installation.
+
 # GameAgentKit V1.5 — DRUI CLI Quick Commands
 
 - Add safe, reusable terminal entrypoint `scripts/drui`: `list`, `list --json`, `help`, `prompt`, and `<stage>` shorthand (prompt-only in a shell).

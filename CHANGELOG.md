@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.4.3 — Documentation-wide Tech Lead audit
+
+- Correct current GitHub Tag installation examples, four-Agent verification instructions, source release contribution workflow, and third-party baseline guidance.
+- Distinguish historical internal GameAgentKit milestones from public DRUI releases and remove the obsolete, manually triggerable ZIP publishing workflow.
+- Add a reproducible maintainer release checklist, review report, and automated Markdown-local-link/version/command consistency checks.
+- Preserve existing CLI and Skill behavior; actual Agent runtime loading still requires machine-level testing.
+
 ## v1.4.2 — Install docs and Tech Lead audit
 
 - Consolidate GitHub CLI/Agent install, update, compact verification, troubleshooting and trust boundaries in `docs/INSTALL_AND_VERIFY.md`.
