@@ -128,6 +128,36 @@ class InstallVerificationTests(unittest.TestCase):
         self.assertIn('may shadow', ' '.join(report['warnings']))
         self.assertIn('NOT TESTED', report['verification'])
 
+    def test_rejects_symlinked_agent_parent_without_outside_writes(self):
+        outside = Path(self.workspace.name) / 'outside-skills'
+        outside.mkdir()
+        agent_root = self.home / '.agents'
+        agent_root.symlink_to(outside, target_is_directory=True)
+        proc = self.install('codex', expected=1)
+        self.assertIn('Unsafe symlinked Skill destination parent', proc.stderr)
+        self.assertEqual(list(outside.iterdir()), [])
+        self.assertTrue(agent_root.is_symlink())
+        self.assertFalse((outside / 'skills').exists())
+
+    def test_copy_option_fails_before_any_install_or_link_writes(self):
+        proc = subprocess.run([sys.executable, str(SOURCE / 'gamekit.py'),
+                               'install', '--root', str(self.root), '--agents', 'codex',
+                               '--copy'], env=self.env, text=True,
+                              capture_output=True, timeout=15)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn('--copy is unsupported', proc.stderr)
+        self.assertFalse(self.root.exists())
+        self.assertFalse((self.home / '.agents').exists())
+        # Existing healthy install remains unaffected by a rejected link --copy.
+        self.install('codex')
+        link = self.home / '.agents' / 'skills' / 'drui'
+        before = link.readlink()
+        proc = subprocess.run([sys.executable, str(self.root / 'gamekit.py'),
+                               'link', '--root', str(self.root), '--agents', 'codex', '--copy'],
+                              env=self.env, text=True, capture_output=True, timeout=15)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertEqual(link.readlink(), before)
+
     def test_dry_run_never_provisions_or_claims_success(self):
         proc = subprocess.run([sys.executable, str(SOURCE / 'gamekit.py'), 'install', '--root', str(self.root),
                                '--agents', 'cursor', '--dry-run'], capture_output=True,
