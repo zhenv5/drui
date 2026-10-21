@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.1 — Compact verification and terminal self-install
+
+- `drui verify` now prints a one-line result by default; failures list at most three details.
+- Keep `drui verify --verbose` for full audit and `--json` for machine-readable output.
+- Install and relink show a compact final verification instead of dozens of Skill inventory lines.
+- Document direct CLI self-install from the official stable GitHub tag, with detailed setup logs kept locally.
+- Require short final verification in Agent install/update prompts; tests cover summary and failure modes.
+
 ## v1.4.0 — Per-Agent Skill installation verification
 
 - Add read-only `drui verify` and `gamekit.py verify` with per-Agent Skill name/status/path, bundled kit version and `--json` output.

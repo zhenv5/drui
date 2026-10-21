@@ -13,7 +13,7 @@ from pathlib import Path
 
 from scripts import dependency_guard as depguard
 
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 HERE = Path(__file__).resolve().parent
 AGENT_PATHS = {
     "codex": [".agents/skills"],
@@ -249,12 +249,14 @@ def unlink_drui_cli(root: Path, *, dry_run=False, home=None):
     return False
 
 
-def installation_report(root, agents, *, home=None, project=None, json_format=False):
+def installation_report(root, agents, *, home=None, project=None, json_format=False, compact=False):
     """Read-only audit of exact bundled Skill symlinks for selected agents."""
-    from scripts.verify_install import inspect, render
+    from scripts.verify_install import inspect, render, render_compact
     report = inspect(root, home or Path.home(), agents, AGENT_PATHS, project=project)
     if json_format:
         print(json.dumps(report, indent=2, ensure_ascii=False))
+    elif compact:
+        render_compact(report)
     else:
         render(report)
     return report
@@ -263,7 +265,7 @@ def installation_report(root, agents, *, home=None, project=None, json_format=Fa
 def cmd_verify(args):
     root = Path(args.root).expanduser().resolve()
     report = installation_report(root, args_agents(args.agents), project=args.project,
-                                 json_format=args.json)
+                                 json_format=args.json, compact=args.compact)
     if not report['summary']['complete']:
         fail('Installation verification incomplete; inspect missing/conflicting Skill paths (no changes made)')
 
@@ -284,7 +286,7 @@ def cmd_install(args):
         if configured_repo(root):
             print("Update source verified: GitHub official origin (zhenv5/drui)")
     if not args.dry_run:
-        installation_report(root, args_agents(args.agents))
+        installation_report(root, args_agents(args.agents), compact=True)
     print("\nShared root:", root)
     print("New projects already see the GLOBAL skills. Optionally add per-project context:")
     print(f"  python3 {root}/gamekit.py attach --project /path/to/game --profile ios-swiftui --name 'My Game'")
@@ -295,7 +297,7 @@ def cmd_link(args):
     provision(root, args_agents(args.agents), dry_run=args.dry_run, copy=args.copy)
     link_drui_cli(root, dry_run=args.dry_run)
     if not args.dry_run:
-        installation_report(root, args_agents(args.agents))
+        installation_report(root, args_agents(args.agents), compact=True)
 
 
 def cmd_unlink(args):
@@ -1197,6 +1199,7 @@ def build_parser():
     verify.add_argument("--agents", default="codex,claude,antigravity,cursor",
                         help="Agents to inspect; default all four, unlike legacy --agents all")
     verify.add_argument("--json", action="store_true", help="Machine-readable verification report")
+    verify.add_argument("--compact", action="store_true", help="One-line summary, at most three failure details")
     verify.add_argument("--project", help="Warn about possible project-local same-name Skill shadows")
     verify.set_defaults(func=cmd_verify)
     doc = sp.add_parser("doctor", help="Check global skill paths and optional project configuration")

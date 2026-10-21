@@ -6,11 +6,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 class PublicReleaseTests(unittest.TestCase):
     def test_version_matches_core_and_cli(self):
-        self.assertEqual((ROOT / "VERSION").read_text().strip(), "1.4.0")
+        self.assertEqual((ROOT / "VERSION").read_text().strip(), "1.4.1")
         from gamekit import VERSION
-        self.assertEqual(VERSION, "1.4.0")
+        self.assertEqual(VERSION, "1.4.1")
         p = subprocess.run([sys.executable, str(ROOT / "scripts/drui"), "version"], capture_output=True, text=True, check=True)
-        self.assertIn("DRUI / GameAgentKit v1.4.0", p.stdout)
+        self.assertIn("DRUI / GameAgentKit v1.4.1", p.stdout)
         self.assertIn("Latest GitHub tag: NOT CHECKED", p.stdout)
     def test_release_pipeline_matches_current_version(self):
         version = (ROOT / "VERSION").read_text().strip()

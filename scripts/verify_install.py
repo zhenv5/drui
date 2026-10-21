@@ -142,6 +142,32 @@ def inspect(root: Path, home: Path, agents: list[str], agent_paths: dict[str, li
     return report
 
 
+def render_compact(report: dict) -> None:
+    """One-line, read-only install result. Details stay available via --verbose/--json."""
+    summary = report['summary']
+    failures = [
+        f"{agent['agent']}/{skill['name']}:{skill['status']}"
+        for agent in report['agents'] for skill in agent['skills']
+        if skill['status'] != 'OK'
+    ]
+    if report['cli']['status'] != 'OK':
+        failures.append(f"CLI:{report['cli']['status']}")
+    warnings = report['warnings']
+    status = 'PASS' if summary['complete'] else 'FAIL'
+    agent_count = len(report['agents'])
+    agent_label = 'agent' if agent_count == 1 else 'agents'
+    print(
+        f"DRUI v{report['version']} {status} | "
+        f"{agent_count} {agent_label} | "
+        f"{summary['installed']}/{summary['expected']} Skill links | "
+        f"{len(failures)} errors, {len(warnings)} warnings | runtime untested"
+    )
+    if failures:
+        shown = failures[:3]
+        tail = f", +{len(failures) - len(shown)} more" if len(failures) > len(shown) else ""
+        print("Failures: " + ", ".join(shown) + tail)
+
+
 def render(report: dict) -> None:
     print(f"\nDRUI Skill verification — GameAgentKit v{report['version']}")
     print(f"Source: {report['root']}")
