@@ -116,7 +116,9 @@ def show_commands():
     print("  drui <workflow>                    prompt 快捷方式（仍不执行）")
     print("  drui plus | drui pro               指定 UI 方法生成 full Prompt")
     print("  drui version                       查看版本和更新源")
-    print("  drui verify [--json]              核对 12 个内置 Skills / 版本 / 冲突")
+    print("  drui verify                       一行摘要；异常时最多 3 项失败")
+    print("  drui verify --verbose             全部 Skills 详细清单")
+    print("  drui verify --json                完整机器可读报告")
     print("  drui verify --agents codex,cursor 仅检查选定 Agent")
     print("  drui sources [--agent codex]       检查可用 UI 方法")
     print("  drui deps list|conflicts|lock|check|approve   外部 Skill 指纹策略")
@@ -182,7 +184,8 @@ def cli(argv=None):
             print("已安装：drui agent install|update  输出完整 Prompt；drui copy update 复制到剪贴板。")
             print("仅复制，不会运行安装脚本、升级 DRUI 或第三方 Skill。")
         elif subject == "verify":
-            print("drui verify — 显示各 Agent 每个内置 Skill 的链接状态、GameAgentKit 版本、外部 Skills 和冲突")
+            print("drui verify — 默认只输出一行摘要；异常时最多列出 3 个失败项")
+            print("drui verify --verbose — 展示完整 Skill、版本与路径明细")
             print("drui verify --agents codex,cursor --json — 对选定 Agent 输出 JSON（只读）")
             print("注意：文件验证不等于真实 Agent 已加载 Skill；不修改任何第三方文件。")
         elif subject == "update":
@@ -206,11 +209,14 @@ def cli(argv=None):
         parser.add_argument("--agents", "--agent", default="codex,claude,antigravity,cursor",
                             help="Comma-separated Agent list; default all four. --agents all checks the three default Agents")
         parser.add_argument("--json", action="store_true", help="Output machine-readable JSON only")
+        parser.add_argument("--verbose", action="store_true", help="Full per-Skill inventory instead of compact summary")
         parser.add_argument("--project", help="Also warn about possible project-local Skill shadowing")
         args = parser.parse_args(argv[1:])
         delegated = ["verify", "--root", str(ROOT), "--agents", args.agents]
         if args.json:
             delegated.append("--json")
+        elif not args.verbose:
+            delegated.append("--compact")
         if args.project:
             delegated += ["--project", args.project]
         old = sys.argv[:]
