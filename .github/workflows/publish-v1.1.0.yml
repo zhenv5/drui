@@ -1,4 +1,4 @@
-name: Publish DRUI v1.1.0 onboarding update
+name: Publish DRUI v1.1.0 onboarding update (verified)
 on:
   push:
     branches: [main]

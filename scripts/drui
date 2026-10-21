@@ -33,6 +33,7 @@ def show_welcome(*, detailed=False):
     print("在 Codex / Claude Code 等 Agent 对话里输入:")
     print("  Use the drui skill, stage review-loop, on this project.")
     if not detailed:
+        print("外部 Skill 冲突检查: drui deps conflicts  (不会修改第三方安装)")
         print("\n更多命令: drui help commands | drui list | drui start")
         return
     print("\n使用前检查 (已有安装时):")
