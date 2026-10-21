@@ -1,6 +1,6 @@
 # Third-party Skill upgrades: DRUI dependency policy (public v1.0.0)
 
-**No silent dependency upgrades.** `drui update` only updates the GameAgentKit ZIP and built-in DRUI/Oil UI Plus. External Skills belong to their respective publishers or the user. A symlink may expose upstream changes instantly, so DRUI verifies the approved **content fingerprint** rather than assuming an unchanged install.
+**No silent dependency upgrades.** `drui update` only switches the official GitHub-tagged GameAgentKit source and bundled DRUI/Oil UI Plus. External Skills belong to their respective publishers or the user. A symlink may expose upstream changes instantly, so DRUI verifies the approved **content fingerprint** rather than assuming an unchanged install.
 
 ## Recommended workflow
 

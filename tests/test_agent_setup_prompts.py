@@ -33,8 +33,8 @@ class AgentSetupPromptTests(unittest.TestCase):
             self.assertIn(f"```text\n{prompt.rstrip()}\n```", README)
             self.assertEqual(self.cli("agent-prompt", action).stdout, prompt)
             self.assertIn("github.com/zhenv5/drui", prompt)
-            self.assertIn("SHA-256", prompt)
-            self.assertIn("Skills", prompt)
+            self.assertIn("git", prompt.lower())
+            self.assertIn("Skill", prompt)
         self.assertFalse(list(self.home.iterdir()))
 
     def test_clipboard_success_is_explicit_and_does_not_install(self):

@@ -117,8 +117,8 @@ def show_commands():
     print("  drui version                       查看版本和更新源")
     print("  drui sources [--agent codex]       检查可用 UI 方法")
     print("  drui deps list|conflicts|lock|check|approve   外部 Skill 指纹策略")
-    print("  drui update --check                检查 GitHub Release")
-    print("  drui update --yes                  显式同意校验并升级 DRUI（不升级外部 Skills）")
+    print("  drui update --check                查询 GitHub 稳定版本 Tag")
+    print("  drui update --yes                  通过 Git checkout 稳定版本（不升级外部 Skills）")
     print("\n终端只输出 Prompt；要实际执行，请把 Prompt 发送给 Agent。")
 
 
@@ -180,8 +180,8 @@ def cli(argv=None):
             print("仅复制，不会运行安装脚本、升级 DRUI 或第三方 Skill。")
         elif subject == "update":
             print("drui update --check — 仅检查最新稳定发行版")
-            print("drui update --yes   — 校验发布包 SHA-256 后备份并更新托管文件，不升级外部 Skills")
-            print("drui update --repo zhenv5/drui --check — 手工指定官方仓库")
+            print("drui update --yes   — 从 GitHub 获取正式版本 Tag 并切换源码，不升级外部 Skills")
+            print("drui update --repo zhenv5/drui --check — 指定官方 GitHub 源码仓库")
         elif subject == "prompt":
             print("drui prompt <workflow> [--project /path/to/game] [--ui-source auto|pro|plus|oil-ui|drui]")
             print("此命令只输出可复制给 Codex/Claude 等 Agent 的指令；不会自己执行。")
@@ -220,7 +220,7 @@ def cli(argv=None):
         print(f"DRUI / GameAgentKit v{VERSION}")
         print(f"Installed at: {ROOT}")
         print(f"GitHub source: {configured_repo(ROOT) or 'NOT CONFIGURED (use drui update --repo zhenv5/drui --check)'}")
-        print("Latest release: NOT CHECKED (offline)")
+        print("Latest GitHub tag: NOT CHECKED (offline)")
         return 0
 
     if argv[0] == "prompt":

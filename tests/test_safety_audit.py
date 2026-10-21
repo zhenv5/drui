@@ -8,11 +8,9 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
-import urllib.request
 
 from gamekit import cmd_upgrade
 from scripts.dependency_guard import digest_skill
-from scripts.github_update import _ensure_trusted_url, _TrustedGitHubRedirect
 
 
 class SafetyAuditTests(unittest.TestCase):
@@ -23,50 +21,13 @@ class SafetyAuditTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def test_trusted_url_enforces_exact_hosts_and_https(self):
-        for bad in ('https://github.com.evil.example/asset',
-                    'https://evil.example/asset',
-                    'http://github.com/asset',
-                    'https://user@github.com/asset',
-                    'https://github.com:8443/asset',
-                    'https://sub.release-assets.githubusercontent.com/asset'):
-            with self.subTest(bad=bad), self.assertRaisesRegex(RuntimeError, 'untrusted'):
-                _ensure_trusted_url(bad, redirected=True)
-        for good in ('https://github.com/release',
-                     'https://api.github.com/repos/owner/repo',
-                     'https://release-assets.githubusercontent.com/a?b=c',
-                     'https://objects.githubusercontent.com/other'):
-            _ensure_trusted_url(good, redirected=True)
-        with self.assertRaisesRegex(RuntimeError, 'untrusted'):
-            _ensure_trusted_url('https://release-assets.githubusercontent.com/asset')
-
-    def test_redirect_handler_rejects_malicious_hop(self):
-        h = _TrustedGitHubRedirect()
-        req = urllib.request.Request('https://github.com/owner/repo/releases/download/v1.2.1/file.zip')
-        for bad in ('https://attacker.example/exe', 'http://release-assets.githubusercontent.com/file'):
-            with self.assertRaisesRegex(RuntimeError, 'untrusted'):
-                h.redirect_request(req, None, 302, 'moved', {}, bad)
-        allowed = h.redirect_request(req, None, 302, 'moved', {}, 'https://release-assets.githubusercontent.com/release.bin')
-        self.assertEqual(allowed.full_url, 'https://release-assets.githubusercontent.com/release.bin')
-
-    def test_release_zip_executable_bits_and_install_restores_execute(self):
-        import stat
-        import zipfile
-        from scripts.create_release import create_release
-        from gamekit import link_drui_cli
-        with tempfile.TemporaryDirectory() as td:
-            archive, _ = create_release(Path(td))
-            with zipfile.ZipFile(archive) as z:
-                info = z.getinfo('GameAgentKit/scripts/drui')
-                self.assertTrue((info.external_attr >> 16) & stat.S_IXUSR)
-                z.extractall(self.base / 'extracted')
-            installed = self.base / 'extracted/GameAgentKit'
-            cli = installed / 'scripts/drui'
-            cli.chmod(0o644)  # ZipFile.extractall may drop executable mode.
-            link_drui_cli(installed, home=self.base / 'home')
-            self.assertTrue(cli.stat().st_mode & stat.S_IXUSR)
-            command = self.base / 'home/.local/bin/drui'
-            self.assertEqual(os.system(f'"{command}" version >/dev/null'), 0)
+    def test_release_source_update_has_no_zip_download(self):
+        import inspect
+        from scripts import github_update
+        source = inspect.getsource(github_update)
+        self.assertNotIn('zipfile', source)
+        self.assertIn("'checkout'", source)
+        self.assertIn("'fetch'", source)
 
     def test_nested_linked_asset_directory_is_not_silently_ignored(self):
         skill = self.base / 'custom-skill'

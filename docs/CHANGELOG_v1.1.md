@@ -1,3 +1,5 @@
+> ARCHIVED history: earlier releases used ZIP. Current releases are GitHub source-only.
+
 # V1.1 — Oil UI companion and original enhanced review prompts
 
 - Added `drui`, an original Skill usable by Codex, Claude Code, Antigravity and future supported agents.

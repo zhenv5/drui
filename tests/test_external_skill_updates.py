@@ -178,15 +178,13 @@ class ExternalSkillUpdateTests(unittest.TestCase):
                                   capture_output=True,env=self.env,timeout=15)
         self.assertIn('drui deps conflicts',help_run.stdout)
 
-    def test_no_hidden_local_pin_in_github_release(self):
+    def test_external_dependency_baseline_not_tracked(self):
         self.deps('lock')
-        import zipfile
-        from scripts.create_release import create_release
-        with tempfile.TemporaryDirectory() as td:
-            archive, _ = create_release(Path(td))
-            with zipfile.ZipFile(archive) as z:
-                self.assertFalse(any('.state/' in n for n in z.namelist()))
-                self.assertTrue(any(n.endswith('scripts/dependency_guard.py') for n in z.namelist()))
+        root = Path(__file__).resolve().parents[1]
+        self.assertIn('.state/', (root / '.gitignore').read_text())
+        self.assertTrue((root / 'scripts/dependency_guard.py').is_file())
+        self.assertFalse((root / 'scripts/create_release.py').exists())
+
 
 
 if __name__ == '__main__':

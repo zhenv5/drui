@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.0 — GitHub source-only installation and updates
+
+- Replaced release ZIP installer with `git clone` of the official stable GitHub Tag directly into `~/GameAgentKit`.
+- Replaced ZIP SHA-256 updater with GitHub stable-release Tag discovery, official-origin validation, clean-worktree refusal and direct Git checkout. No automatic external Skill updates.
+- README / QUICKSTART / clipboard Agent prompts now use GitHub source; CI and Releases no longer publish installer archives.
+- No backwards compatibility for legacy ZIP-managed installations (new installation baseline).
+
+# Changelog
+
 ## v1.2.1 — Safety and installation audit
 
 - Ensure the bundled `drui` command is executable after ZIP extraction and upgrades; publish it with executable Git mode.

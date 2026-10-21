@@ -94,7 +94,7 @@ drui sources --agent claude
 
 ## 完整下载安装与从旧版迁移
 
-当前下载包：`GameAgentKit-v1.2.1.zip`。
+当前安装方式：`git clone --branch v1.3.0 https://github.com/zhenv5/drui.git ~/GameAgentKit`。无 ZIP 安装。
 
 见本包 `QUICKSTART.md` 和 `README.md` 的首次安装、版本升级、`migrate-drui` 与 `register-external` 小节。
 

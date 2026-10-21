@@ -1,7 +1,6 @@
-请在我当前使用的 macOS/Linux 电脑上升级已安装的 DRUI（GameAgentKit）到官方最新稳定版本。官方仓库：https://github.com/zhenv5/drui 。你是执行升级的 coding agent，请实际完成检查、备份、更新和回归验证，不要只给我文字指南。
-
-1. 先检查 ~/GameAgentKit、当前 drui version、已固定的 GitHub 更新源、现有用户 Skills 与指纹状态。运行 drui deps list、drui deps conflicts、drui deps check；如果 drui 不在 PATH，使用 python3 ~/GameAgentKit/scripts/drui。`deps check` 发现漂移要如实报告，但绝不自动 lock、approve、覆盖或升级第三方 Skills。如果目录不是官方 DRUI，或固定的源不是 zhenv5/drui，停止并征询我的决定，不能偷偷换源。
-2. 用内置安全更新器先执行 drui update --repo zhenv5/drui --check（若已有相同来源也可以省略 --repo），确认官方 GitHub Release 的最新稳定版本及版本差异。阅读 Release Notes 和变更；若已是最新则不要重复安装。如果无法联网、没有通过预检或需要强制覆盖用户文件，不要执行更新。
-3. 若来源及预检正常，执行 drui update --repo zhenv5/drui --yes（或等价的 python3 ~/GameAgentKit/gamekit.py update ... --root ~/GameAgentKit）。让内置更新器校验 Release ZIP 和 SHA-256、使用安全暂存与备份，并仅更新 GameAgentKit 托管文件。不要用 git pull、unzip 直接覆盖 ~/GameAgentKit，也不要运行第三方升级器。更新过程中发生错误须保留现场并报告，不能谎称已经回滚或完成。
-4. 升级后运行 drui version、drui list --beginner、python3 ~/GameAgentKit/gamekit.py doctor --agents <你实际安装的 Agent scope>、drui deps conflicts 和 drui deps check；必要时先使用 python3 ~/GameAgentKit/gamekit.py link --agents all 的安全重链机制，不能覆盖用户自己的同名 Skill 或命令。报告升级前后版本、发行来源、检查结果、备份路径及仍需处理的冲突。
-5. 绝不自动修改第三方 oil-ui / oil-ui-pro 等 Skills，不执行外部安装脚本，也不把 SHA-256 指纹检查表述成兼容性或运行安全证明。
+请将本机已安装的 DRUI / GameAgentKit 用官方 GitHub 源码 Tag 升级，不使用 ZIP；仓库只能是 https://github.com/zhenv5/drui 。
+1. 确认 ~/GameAgentKit 是 Git checkout，origin 指向官方仓库，无未提交的源码改动/未追踪文件；先运行 drui version、drui deps check、drui deps conflicts，记录旧版本和独立安装的用户 Skills。不允许覆盖用户数据，也不允许自动更新、lock 或 approve 第三方 Skills。
+2. 运行 "$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --check；查看 GitHub 正式 Release 变更和 Tag。若无新版本则停止；如果当前仓库有改动，停止并报告，不要 git reset --hard、clean 或 force checkout。
+3. 确认无冲突后执行 "$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --yes。DRUI 使用 Git 获取官方 Tag、验证源码 VERSION，再切换 checkout；不会下载/解压 ZIP。异常中断时保留现场供人工修复，不保证断电事务原子性。
+4. 更新完成后运行 python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,cursor（只链接空位）、doctor、drui version、list --beginner、deps check、deps conflicts；报告新旧 Tag/Commit、真实测试结果、可能冲突及未验证的 Agent。
+整个流程严格禁止 curl|bash、静默依赖升级以及对已有第三方 Skill 路径的写入。

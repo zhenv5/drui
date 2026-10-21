@@ -56,15 +56,11 @@ python3 ~/GameAgentKit/gamekit.py review evaluate \
 
 **注意**：评分工具验证报告字段、证据文件是否存在及阻塞问题状态，不具备判定截图真实性、Agent 实际是否使用隔离会话或真实人类用户参与的能力。它通过并非真正的产品上线认证。
 
-## 旧版升级
+## GitHub 源码安装
 
 ```bash
-mkdir -p ~/Downloads/GameAgentKit-v1.5
-unzip ~/Downloads/GameAgentKit_v1.5_DRUI_Quick_Commands.zip -d ~/Downloads/GameAgentKit-v1.5
-python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.5/GameAgentKit --dry-run
-python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.5/GameAgentKit
-python3 ~/GameAgentKit/gamekit.py link --agents all
-python3 ~/GameAgentKit/gamekit.py doctor --agents all
+git clone --branch v1.3.0 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+bash "$HOME/GameAgentKit/install.sh" --agents all
 ```
 
-首次安装用 `bash ~/Downloads/GameAgentKit-v1.5/GameAgentKit/install.sh --agents all`。此包本身不会打开 Xcode、运行审查或修改已有 Oil UI。
+首次安装用 `git clone --branch v1.3.0 https://github.com/zhenv5/drui.git ~/GameAgentKit`，再执行 `bash ~/GameAgentKit/install.sh --agents all`。此包本身不会打开 Xcode、运行审查或修改已有 Oil UI。

@@ -1,220 +1,142 @@
-"""Conservative GitHub Release updater for GameAgentKit.
+"""GitHub source-only updater for DRUI.
 
-- GitHub public releases only, explicit repository pinning.
-- Versioned zip and SHA-256 are downloaded from the same release.
-- Validate every ZIP entry before extraction (including symlink/type checks).
-- Delegate mutations to existing backup-preserving `cmd_upgrade`.
-- Never install arbitrary GitHub Actions, execute released scripts, or delete custom skills.
-
-The checksum detects corruption; it does not defend against compromise of the
-upstream GitHub account or release artifacts. Review publisher and source.
+The canonical ~/GameAgentKit installation is a git clone of the official
+repository, checked out at an immutable public GitHub Release tag. No ZIP,
+installer download, archive extraction, or third-party Skill mutation occurs.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import re
-import stat
-import tempfile
+import subprocess
 import urllib.error
 import urllib.parse
 import urllib.request
-import zipfile
 from pathlib import Path
-from types import SimpleNamespace
 
-REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
-TAG_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
-MAX_ARCHIVE_BYTES = 25 * 1024 * 1024
-MAX_UNPACKED_BYTES = 40 * 1024 * 1024
-MAX_ZIP_FILES = 500
-USER_AGENT = "GameAgentKit/1.2 (+https://github.com/zhenv5/drui)"
-# GitHub release assets redirect to the official GitHub CDN. Never trust an
-# arbitrary HTTPS redirect from a nominally legitimate release URL.
-TRUSTED_REDIRECT_HOSTS = frozenset({
-    "github.com", "api.github.com", "release-assets.githubusercontent.com",
-    "objects.githubusercontent.com",
+OFFICIAL_REPO = 'zhenv5/drui'
+OFFICIAL_REMOTES = frozenset({
+    'https://github.com/zhenv5/drui.git',
+    'https://github.com/zhenv5/drui',
+    'git@github.com:zhenv5/drui.git',
+    'git@github.com:zhenv5/drui',
 })
-
-
-def _ensure_trusted_url(url: str, *, redirected: bool = False) -> None:
-    parsed = urllib.parse.urlsplit(url)
-    allowed = TRUSTED_REDIRECT_HOSTS if redirected else {"github.com", "api.github.com"}
-    if (parsed.scheme != "https" or parsed.hostname not in allowed or
-            parsed.username is not None or parsed.password is not None or
-            parsed.port not in (None, 443)):
-        raise RuntimeError(f"Refusing untrusted GitHub download URL: {url}")
-
-
-class _TrustedGitHubRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        _ensure_trusted_url(newurl, redirected=True)
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
-
+TAG_RE = re.compile(r'^v(\d+)\.(\d+)\.(\d+)$')
+USER_AGENT = 'DRUI/GitSource (+https://github.com/zhenv5/drui)'
 
 
 def normalize_repo(raw: str) -> str:
-    if not REPO_RE.fullmatch(raw or "") or ".." in raw:
-        raise RuntimeError("Repository must be a GitHub owner/repo, e.g. alice/game-agent-kit")
+    if raw != OFFICIAL_REPO:
+        raise RuntimeError(f'Only the official GitHub repository {OFFICIAL_REPO} is supported')
     return raw
 
 
-def release_asset_name(tag: str) -> str:
-    if not TAG_RE.fullmatch(tag):
-        raise RuntimeError(f"Invalid release tag: {tag!r} (expected vMAJOR.MINOR.PATCH)")
-    return f"GameAgentKit-{tag}.zip"
-
-
 def semver(tag: str) -> tuple[int, int, int]:
-    m = TAG_RE.fullmatch(tag)
-    if not m:
-        raise RuntimeError(f"Invalid version: {tag}")
-    return tuple(map(int, m.groups()))
+    match = TAG_RE.fullmatch(tag)
+    if not match:
+        raise RuntimeError(f'Invalid stable DRUI version tag: {tag!r}')
+    return tuple(int(v) for v in match.groups())
 
 
-def _request(url: str, *, limit: int) -> bytes:
-    _ensure_trusted_url(url)
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/vnd.github+json"})
-    # A dedicated opener enforces the same allowlist on every redirect hop.
-    opener = urllib.request.build_opener(_TrustedGitHubRedirect())
+def _run(root: Path, *args: str, check: bool = True) -> str:
     try:
-        with opener.open(req, timeout=25) as response:
-            _ensure_trusted_url(response.geturl(), redirected=True)
-            if response.status != 200:
-                raise RuntimeError(f"GitHub HTTP {response.status} at {url}")
-            data = response.read(limit + 1)
-    except (urllib.error.URLError, TimeoutError) as ex:
-        raise RuntimeError(f"GitHub download failed: {ex}") from ex
-    if len(data) > limit:
-        raise RuntimeError("Release metadata or asset exceeds safe size limit")
-    return data
+        proc = subprocess.run(['git', '-C', str(root), *args], text=True,
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              timeout=75, check=False)
+    except (FileNotFoundError, subprocess.TimeoutExpired) as ex:
+        raise RuntimeError(f'Git command unavailable or timed out: {ex}') from ex
+    if check and proc.returncode:
+        raise RuntimeError(f'Git {args[0]} failed: {proc.stderr.strip() or proc.stdout.strip()}')
+    return proc.stdout.strip()
 
 
-def _json(url: str) -> dict:
-    obj = json.loads(_request(url, limit=2 * 1024 * 1024))
-    if not isinstance(obj, dict):
-        raise RuntimeError("Invalid GitHub release metadata")
-    return obj
-
-
-def _asset_url(release: dict, name: str) -> str:
-    for asset in release.get("assets", []):
-        if asset.get("name") == name:
-            uri = asset.get("browser_download_url", "")
-            parsed = urllib.parse.urlparse(uri)
-            if parsed.scheme != "https" or parsed.hostname != "github.com":
-                raise RuntimeError("Unexpected GitHub release asset URL")
-            return uri
-    raise RuntimeError(f"Required release asset missing: {name}")
-
-
-def validate_zip(data: bytes, tag: str, temp_dir: Path) -> Path:
-    """Refuse traversal, absolute paths, symlinks, bombs, unexpected root."""
-    from io import BytesIO
-    root = temp_dir / "GameAgentKit"
-    with zipfile.ZipFile(BytesIO(data)) as z:
-        files = z.infolist()
-        if not files or len(files) > MAX_ZIP_FILES:
-            raise RuntimeError("Invalid or oversized ZIP file list")
-        seen = set()
-        total = 0
-        for item in files:
-            name = item.filename
-            parts = name.rstrip("/").split("/")
-            if ("\\" in name or name.startswith("/") or
-                any(x in ("", ".", "..") for x in parts) or parts[0] != "GameAgentKit"):
-                raise RuntimeError(f"Unsafe ZIP path: {name!r}")
-            if name in seen:
-                raise RuntimeError("Duplicate ZIP entry")
-            seen.add(name)
-            kind = stat.S_IFMT((item.external_attr >> 16) & 0o170000)
-            if kind not in (0, stat.S_IFDIR, stat.S_IFREG):
-                raise RuntimeError(f"Unsupported ZIP entry (symlink/device): {name}")
-            total += item.file_size
-            if total > MAX_UNPACKED_BYTES:
-                raise RuntimeError("ZIP exceeds safe unpacked size limit")
-        z.extractall(temp_dir)
-    if not (root / "gamekit.py").is_file() or not (root / "scripts" / "drui").is_file():
-        raise RuntimeError("Release archive does not contain GameAgentKit")
-    installed = (root / "VERSION").read_text(encoding="utf-8").strip()
-    if installed != tag[1:]:
-        raise RuntimeError("Release tag and packaged VERSION mismatch")
-    return root
-
-
-def source_config_path(root: Path) -> Path:
-    return root / ".gamekit-updates.json"
-
-
-def save_repo(root: Path, repo: str) -> None:
-    p = source_config_path(root)
-    if p.is_symlink():
-        raise RuntimeError("Refusing symlinked update config")
-    if p.exists():
-        stored = json.loads(p.read_text(encoding="utf-8"))
-        old = stored.get("repository")
-        if old != repo:
-            raise RuntimeError(f"Update source already pinned to {old}; refusing automatic switch to {repo}")
-        return
-    tmp = p.with_suffix(".tmp")
-    tmp.write_text(json.dumps({"repository": repo}, indent=2) + "\n", encoding="utf-8")
-    tmp.replace(p)
+def _verify_root(root: Path) -> None:
+    if root.is_symlink() or not root.is_dir() or not (root / 'VERSION').is_file():
+        raise RuntimeError('Expected a DRUI Git checkout at ~/GameAgentKit')
+    if _run(root, 'rev-parse', '--is-inside-work-tree') != 'true':
+        raise RuntimeError('The DRUI directory is not a Git checkout')
+    if Path(_run(root, 'rev-parse', '--show-toplevel')).resolve() != root.resolve():
+        raise RuntimeError('DRUI must be the root of its own Git checkout')
+    origin = _run(root, 'remote', 'get-url', 'origin')
+    if origin not in OFFICIAL_REMOTES:
+        raise RuntimeError(f'Untrusted Git origin {origin!r}; expected {OFFICIAL_REPO}')
+    # Reject hostile user-defined repository-local hooks / redirects on this entrypoint.
+    if _run(root, 'config', '--local', '--get', 'core.hooksPath', check=False):
+        raise RuntimeError('Custom repository hooksPath configured; review manually')
 
 
 def configured_repo(root: Path) -> str | None:
-    p = source_config_path(root)
-    if not p.exists():
+    try:
+        _verify_root(root)
+        return OFFICIAL_REPO
+    except RuntimeError:
         return None
-    if p.is_symlink():
-        raise RuntimeError("Refusing symlinked update config")
-    return normalize_repo(json.loads(p.read_text(encoding="utf-8"))["repository"])
+
+
+def _latest_tag() -> str:
+    url = f'https://api.github.com/repos/{OFFICIAL_REPO}/releases/latest'
+    req = urllib.request.Request(url, headers={'User-Agent': USER_AGENT, 'Accept': 'application/vnd.github+json'})
+    # No third-party host redirects, even when the original URL was GitHub.
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            raise RuntimeError(f'Unexpected release metadata redirect: {newurl}')
+    try:
+        with urllib.request.build_opener(NoRedirect()).open(req, timeout=15) as response:
+            if response.geturl() != url or response.status != 200:
+                raise RuntimeError('Unexpected GitHub release metadata response')
+            data = response.read(131073)
+    except (urllib.error.URLError, TimeoutError) as ex:
+        raise RuntimeError(f'Unable to check GitHub release: {ex}') from ex
+    if len(data) > 131072:
+        raise RuntimeError('Oversized GitHub metadata response')
+    obj = json.loads(data)
+    if not isinstance(obj, dict) or obj.get('draft') or obj.get('prerelease'):
+        raise RuntimeError('GitHub did not return a stable release')
+    tag = obj.get('tag_name')
+    semver(tag)
+    return tag
 
 
 def update(*, root: Path, repo: str | None = None, check: bool = False,
            dry_run: bool = False, yes: bool = False, upgrade_callback=None) -> str:
-    if not (root / "gamekit.py").is_file() or not (root / "VERSION").is_file():
-        raise RuntimeError(f"Not a GameAgentKit installation: {root}")
-    pinned = configured_repo(root)
-    if pinned and repo and normalize_repo(repo) != pinned:
-        raise RuntimeError(f"Already pinned to {pinned}; refusing change to {repo}")
-    repo = normalize_repo(repo or pinned or "")
-    current = "v" + (root / "VERSION").read_text(encoding="utf-8").strip()
-    obj = _json(f"https://api.github.com/repos/{repo}/releases/latest")
-    tag = obj.get("tag_name", "")
-    latest = semver(tag)
-    local = semver(current)
-    print(f"GitHub: {repo} | installed: {current} | latest stable: {tag}")
-    if latest <= local:
-        print("Already up to date; nothing to change.")
-        if not dry_run and not check and not pinned:
-            save_repo(root, repo)
-        return "current"
-    release_asset_name(tag)
-    asset = f"GameAgentKit-{tag}.zip"
-    url = _asset_url(obj, asset)
-    sum_url = _asset_url(obj, asset + ".sha256")
-    print(f"Available: {tag} (verified release ZIP + SHA-256 required)")
+    """Check GitHub Release, then fetch + checkout its tagged *source* with Git.
+
+    upgrade_callback is ignored; it is accepted only for the existing core
+    caller. No extraction, file copying, hooks, external Skill modification.
+    """
+    root = Path(root).expanduser().absolute()
+    if repo is not None:
+        normalize_repo(repo)
+    _verify_root(root)
+    if yes and _run(root, 'status', '--porcelain', '--untracked-files=normal'):
+        raise RuntimeError('Git checkout has local changes or untracked files; refusing update')
+    installed = (root / 'VERSION').read_text(encoding='utf-8').strip()
+    current = 'v' + installed
+    semver(current)
+    latest = _latest_tag()
+    print(f'GitHub source: {OFFICIAL_REPO} | installed: {current} | latest stable tag: {latest}')
+    if semver(latest) <= semver(current):
+        print('Already up to date.')
+        return 'current'
+    print(f'Available: {latest} (GitHub tagged source; no release ZIP)')
     if check or dry_run:
-        print("Check/preview mode: no download or modifications.")
-        return "available"
+        print('Check only: no local Git refs or files modified.')
+        return 'available'
     if not yes:
-        raise RuntimeError("Upgrade not started. Rerun with --yes after reviewing the source and publisher.")
-    checksum = _request(sum_url, limit=8192).decode("utf-8")
-    line = checksum.strip().splitlines()
-    if len(line) != 1:
-        raise RuntimeError("Invalid checksum asset format")
-    parts = line[0].split()
-    if len(parts) != 2 or parts[1].lstrip("*") != asset or not re.fullmatch(r"[a-fA-F0-9]{64}", parts[0]):
-        raise RuntimeError("Checksum filename or hash mismatch")
-    data = _request(url, limit=MAX_ARCHIVE_BYTES)
-    digest = hashlib.sha256(data).hexdigest()
-    if digest.lower() != parts[0].lower():
-        raise RuntimeError("SHA-256 verification failed; refusing upgrade")
-    with tempfile.TemporaryDirectory(prefix="gamekit-release-") as tmp:
-        source = validate_zip(data, tag, Path(tmp))
-        if upgrade_callback is None:
-            raise RuntimeError("Missing safe upgrade callback")
-        upgrade_callback(SimpleNamespace(root=str(root), source=str(source), dry_run=False))
-    save_repo(root, repo)
-    print("Update installed. Run `python3 ~/GameAgentKit/gamekit.py link --agents all` if links were missing.")
-    return "updated"
+        raise RuntimeError('Upgrade not started: inspect changes and rerun with --yes')
+    # Never overwrite a user-edited checkout. Local-only state stays .gitignored.
+    previous_sha = _run(root, 'rev-parse', 'HEAD')
+    # Named tag ref, not branch: protect from mutable main changes.
+    _run(root, '-c', 'protocol.file.allow=never', 'fetch', '--no-tags', '--depth=1',
+         'origin', f'refs/tags/{latest}:refs/tags/{latest}')
+    tag_sha = _run(root, 'rev-parse', f'refs/tags/{latest}^{{commit}}')
+    found_version = _run(root, 'show', f'{tag_sha}:VERSION')
+    if found_version != latest[1:]:
+        raise RuntimeError('Remote tag and VERSION file disagree; no changes applied')
+    if not _run(root, 'show', f'{tag_sha}:scripts/drui').startswith('#!/usr/bin/env python3'):
+        raise RuntimeError('Git release tag missing DRUI CLI')
+    # Clean checkout, stable tag, no shell hooks. Git controls managed source files.
+    _run(root, '-c', 'core.hooksPath=/dev/null', 'checkout', '--detach', tag_sha)
+    print(f'Updated {previous_sha[:12]} -> {tag_sha[:12]} ({latest})')
+    print('Installed Skill symlinks still point to ~/GameAgentKit/skills. Run drui deps check and doctor.')
+    return 'updated'

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from scripts import dependency_guard as depguard
 
-VERSION = "1.2.1"
+VERSION = "1.3.0"
 HERE = Path(__file__).resolve().parent
 AGENT_PATHS = {
     "codex": [".agents/skills"],
@@ -201,7 +201,7 @@ DRUI_CLI = "drui"
 
 
 def ensure_drui_executable(root: Path, *, dry_run=False):
-    """A GitHub Release ZIP extracted by Python may lose UNIX executable bits.
+    """Ensure the GitHub-cloned DRUI CLI has executable permissions.
 
     Only change the toolkit-owned command under its canonical root; this never
     chmods a user-installed `drui` file or foreign Agent Skill.
@@ -261,17 +261,9 @@ def cmd_install(args):
     # If installed from a public GitHub clone, pin the source for `drui update`.
     # No network request and no repository change; skip ZIP/local distributions.
     if not args.dry_run:
-        from scripts.github_update import save_repo
-        import subprocess
-        try:
-            remote = subprocess.run(["git", "-C", str(src), "remote", "get-url", "origin"],
-                                    capture_output=True, text=True, timeout=5, check=True).stdout.strip()
-        except (OSError, subprocess.SubprocessError):
-            remote = ""
-        m = re.fullmatch(r"(?:https://github\.com/|git@github\.com:)([\w.-]+/[\w.-]+?)(?:\.git)?/?", remote)
-        if m:
-            save_repo(root, m.group(1))
-            print(f"Update source pinned: {m.group(1)}")
+        from scripts.github_update import configured_repo
+        if configured_repo(root):
+            print("Update source verified: GitHub official origin (zhenv5/drui)")
     print("\nShared root:", root)
     print("New projects already see the GLOBAL skills. Optionally add per-project context:")
     print(f"  python3 {root}/gamekit.py attach --project /path/to/game --profile ios-swiftui --name 'My Game'")
@@ -1078,9 +1070,8 @@ def cmd_review(args):
 
 def cmd_online_update(args):
     from scripts.github_update import update
-    return update(root=Path(args.root).expanduser().resolve(), repo=args.repo,
-                  check=args.check, dry_run=args.dry_run, yes=args.yes,
-                  upgrade_callback=cmd_upgrade)
+    return update(root=Path(args.root).expanduser().absolute(), repo=args.repo,
+                  check=args.check, dry_run=args.dry_run, yes=args.yes)
 
 
 
@@ -1149,7 +1140,7 @@ def build_parser():
     p = argparse.ArgumentParser(description="One shared skills hub for many games and agents")
     p.add_argument("--version", action="version", version=VERSION)
     sp = p.add_subparsers(dest="command", required=True)
-    install = sp.add_parser("install", help="Install a single canonical root, link skills globally")
+    install = sp.add_parser("install", help="Link Skills and CLI from a local GitHub source checkout")
     install.add_argument("--root", default="~/GameAgentKit")
     install.add_argument("--agents", default="all")
     install.add_argument("--copy", action="store_true", help="Copy skills if symlinks unsupported (updates require relinking)")
@@ -1203,7 +1194,7 @@ def build_parser():
     online.add_argument("--dry-run", action="store_true", help="Preview the available release without downloading it")
     online.add_argument("--yes", action="store_true", help="Approve installation of the checksum-verified release")
     online.set_defaults(func=cmd_online_update)
-    upgrade = sp.add_parser("upgrade", help="Safely update only packaged kit files from a newer extracted ZIP")
+    upgrade = sp.add_parser("upgrade", help="Internal file-tree upgrade utility (prefer tagged GitHub source: drui update)")
     upgrade.add_argument("--from", dest="source", required=True)
     upgrade.add_argument("--root", default="~/GameAgentKit")
     upgrade.add_argument("--dry-run", action="store_true")

@@ -1,3 +1,5 @@
+> ARCHIVED history: earlier releases used ZIP. Current releases are GitHub source-only.
+
 # V1.3 — explicit workflow stages and installation documentation
 
 - Clarified `drui` (original GameAgentKit skill) vs user-owned external `oil-ui`.

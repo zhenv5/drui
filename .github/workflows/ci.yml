@@ -11,16 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Syntax check
+      - name: Syntax
         run: python3 -m compileall -q gamekit.py scripts tests
-      - name: Tests
+      - name: Full regression
         run: python3 -m unittest discover -s tests -v
-      - name: Build release archive
-        run: python3 scripts/create_release.py
-      - name: Inspect ZIP
-        run: |
-          unzip -t dist/GameAgentKit-v*.zip
-          cd dist && sha256sum -c GameAgentKit-v*.zip.sha256
+      - name: Clean Git clone install smoke
+        run: bash tests/smoke_git_install.sh
