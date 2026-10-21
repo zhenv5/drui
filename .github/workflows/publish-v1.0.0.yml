@@ -1,0 +1,49 @@
+name: Publish initial DRUI v1.0.0
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-v1.0.0.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify designated public version
+        run: |
+          test "$(cat VERSION)" = "1.0.0"
+          python3 -m compileall -q gamekit.py scripts tests
+          python3 -m unittest discover -s tests -v
+      - name: Build and verify release assets
+        run: |
+          python3 scripts/create_release.py
+          unzip -t dist/GameAgentKit-v1.0.0.zip
+          cd dist
+          sha256sum -c GameAgentKit-v1.0.0.zip.sha256
+      - name: Create tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          TAG=v1.0.0
+          if ! git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' tag -a "$TAG" -m 'DRUI / GameAgentKit v1.0.0'
+            git push origin "$TAG"
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists; not overwriting existing assets"
+          else
+            gh release create "$TAG" \
+              "dist/GameAgentKit-v1.0.0.zip" \
+              "dist/GameAgentKit-v1.0.0.zip.sha256" \
+              --verify-tag --title 'DRUI v1.0.0 — GameAgentKit' \
+              --notes-file CHANGELOG.md
+          fi
