@@ -11,3 +11,6 @@ DRUI **only** installs and updates via the official GitHub Git source repository
 - **Verification:** `drui verify` audits local links, metadata and CLI paths; it cannot prove that Codex, Claude Code, Antigravity or Cursor actually loaded or ran them.
 
 See the [installation and verification guide](docs/INSTALL_AND_VERIFY.md). Privately report security issues with GitHub security advisories when enabled.
+
+- **Parent symlinks:** Skill installer refuses symlinked destination parents, rather than following a redirection into a different user directory. It does not remove such directories. The check is a preflight safety measure, not a race-free filesystem transaction.
+- **Copy mode:** `install --copy` and `link --copy` fail before modifications. Only Git-managed source and owned Skill symlinks are supported by the current verifier/update strategy.

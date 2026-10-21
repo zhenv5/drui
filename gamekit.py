@@ -13,7 +13,7 @@ from pathlib import Path
 
 from scripts import dependency_guard as depguard
 
-VERSION = "1.4.4"
+VERSION = "1.4.5"
 HERE = Path(__file__).resolve().parent
 AGENT_PATHS = {
     "codex": [".agents/skills"],
@@ -60,6 +60,14 @@ def ensure_link(dest: Path, source: Path, *, dry_run=False, copy=False, verbose=
         return "collision"
     if verbose:
         print(f"  {'WOULD ' if dry_run else ''}{'COPY' if copy else 'LINK'} {dest} -> {source}")
+    # A symlinked parent can redirect even a *new* name outside the chosen
+    # Agent directory. Do not follow ~/.agents/skills or intermediate links.
+    parent = dest.parent
+    home = Path.home()
+    while parent != home and parent != parent.parent:
+        if parent.is_symlink():
+            fail(f"Unsafe symlinked Skill destination parent: {parent}; inspect manually")
+        parent = parent.parent
     if not dry_run:
         dest.parent.mkdir(parents=True, exist_ok=True)
         if copy:
@@ -93,6 +101,21 @@ def copy_bundle(src: Path, dest: Path, *, dry_run=False):
     print(f"{'WOULD INSTALL' if dry_run else 'INSTALL'} {src} -> {dest}")
     if not dry_run:
         shutil.copytree(src, dest, ignore=shutil.ignore_patterns("__pycache__", ".DS_Store", ".pytest_cache", ".git", ".venv", "dist"))
+
+
+def preflight_agent_destination_parents(home: Path, agents: list[str]) -> None:
+    """Detect redirected Agent/CLI roots before creating any Skill or kit files.
+
+    This is a defensive preflight, not a race-free filesystem transaction.
+    """
+    parents = [home / rel for agent in agents for rel in AGENT_PATHS[agent]]
+    parents.append(home / ".local" / "bin")
+    for folder in parents:
+        current = folder
+        while current != home and current != current.parent:
+            if current.is_symlink():
+                fail(f"Unsafe symlinked Skill destination parent: {current}; inspect manually")
+            current = current.parent
 
 
 def provision(root, agents, *, dry_run=False, copy=False, home=None, link_root=None):
@@ -271,13 +294,17 @@ def cmd_verify(args):
 
 
 def cmd_install(args):
+    if args.copy:
+        fail("--copy is unsupported: DRUI updates and verification require managed symlinks. No files changed.")
     src = HERE
     root = Path(args.root).expanduser().resolve()
     if root == Path.home().resolve():
         fail("Refusing to install directly into home directory")
+    agents = args_agents(args.agents)
+    preflight_agent_destination_parents(Path.home(), agents)
     copy_bundle(src, root, dry_run=args.dry_run)
     # If dry-run, canonical files do not exist yet; use source to inspect skill names.
-    provision(src if args.dry_run else root, args_agents(args.agents), dry_run=args.dry_run, copy=args.copy, link_root=root)
+    provision(src if args.dry_run else root, agents, dry_run=args.dry_run, copy=args.copy, link_root=root)
     link_drui_cli(root, dry_run=args.dry_run)
     # If installed from a public GitHub clone, pin the source for `drui update`.
     # No network request and no repository change; skip ZIP/local distributions.
@@ -295,8 +322,12 @@ def cmd_install(args):
 
 
 def cmd_link(args):
+    if args.copy:
+        fail("--copy is unsupported: DRUI updates and verification require managed symlinks. No files changed.")
     root = Path(args.root).expanduser().resolve()
-    provision(root, args_agents(args.agents), dry_run=args.dry_run, copy=args.copy)
+    agents = args_agents(args.agents)
+    preflight_agent_destination_parents(Path.home(), agents)
+    provision(root, agents, dry_run=args.dry_run, copy=args.copy)
     link_drui_cli(root, dry_run=args.dry_run)
     if not args.dry_run:
         report = installation_report(root, args_agents(args.agents), compact=True)
@@ -633,8 +664,10 @@ def validate_external_skill(path: Path, expected_name: str):
 
 def cmd_register_external(args):
     source = validate_external_skill(Path(args.source).expanduser().resolve(), args.name)
+    agents = args_agents(args.agents)
+    preflight_agent_destination_parents(Path.home(), agents)
     count, conflicts = 0, 0
-    for agent in args_agents(args.agents):
+    for agent in agents:
         for rel in AGENT_PATHS[agent]:
             dest = Path.home() / rel / args.name
             status = ensure_link(dest, source, dry_run=args.dry_run)
@@ -1172,13 +1205,13 @@ def build_parser():
     install = sp.add_parser("install", help="Link Skills and CLI from a local GitHub source checkout")
     install.add_argument("--root", default="~/GameAgentKit")
     install.add_argument("--agents", default="all")
-    install.add_argument("--copy", action="store_true", help="Copy skills if symlinks unsupported (updates require relinking)")
+    install.add_argument("--copy", action="store_true", help="Unsupported; fail before writing (DRUI requires symlinks)")
     install.add_argument("--dry-run", action="store_true")
     install.set_defaults(func=cmd_install)
     link = sp.add_parser("link", help="Link shared skills into additional global agent paths")
     link.add_argument("--root", default="~/GameAgentKit")
     link.add_argument("--agents", default="all")
-    link.add_argument("--copy", action="store_true")
+    link.add_argument("--copy", action="store_true", help="Unsupported; fail before writing (DRUI requires symlinks)")
     link.add_argument("--dry-run", action="store_true")
     link.set_defaults(func=cmd_link)
     unlink = sp.add_parser("unlink", help="Remove only owned global symlinks (keep central root and project files)")

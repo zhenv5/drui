@@ -1,13 +1,13 @@
 # DRUI · 安装、更新与验证
 
-**官方来源：** [zhenv5/drui](https://github.com/zhenv5/drui) · [最新稳定 Release](https://github.com/zhenv5/drui/releases/latest)。DRUI 仅通过 GitHub **Git 源码**安装/更新，不使用 ZIP；需要 Git、Python 3 和 macOS/Linux。
+**官方来源：** [zhenv5/drui](https://github.com/zhenv5/drui) · [最新稳定 Release](https://github.com/zhenv5/drui/releases/latest)。DRUI 仅通过 GitHub **Git 源码**安装/更新，不使用 ZIP；需要 Git、Python 3 和 macOS/Linux。内置 Skills 通过受管理的符号链接共享；不支持 `--copy` 模式。
 
 ## 1. 命令行首次安装
 
-在官方 Release 页核对最新稳定版本 Tag（`vX.Y.Z`，非 prerelease），下面 `v1.4.4` 是本版示例；未来有新版本应替换。若已存在 `~/GameAgentKit`，不要覆盖。
+在官方 Release 页核对最新稳定版本 Tag（`vX.Y.Z`，非 prerelease），下面 `v1.4.5` 是本版示例；未来有新版本应替换。若已存在 `~/GameAgentKit`，不要覆盖。
 
 ```bash
-git clone --depth 1 --branch v1.4.4 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.5 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 git -C "$HOME/GameAgentKit" remote get-url origin
 cat "$HOME/GameAgentKit/VERSION"
 # 阅读 install.sh / gamekit.py 并检查将创建哪些链接
@@ -27,7 +27,7 @@ else
 fi
 ```
 
-重要：安装器**保留现有同名用户 Skill**；从 v1.4.4 开始，内置最终验证不完整时安装器自身也会返回非零码。命令行示例仍单独执行 `drui verify` 并检查退出码，避免假报成功。
+重要：安装器**保留现有同名用户 Skill**；从 v1.4.5 开始，内置最终验证不完整时安装器自身也会返回非零码。命令行示例仍单独执行 `drui verify` 并检查退出码，避免假报成功。
 
 ## 2. 验证命令与输出
 
@@ -42,7 +42,7 @@ drui verify --project /path/to/game             # 额外检查项目 Skill 遮�
 成功时的**示例**（不是用户机器的实测结果）：
 
 ```text
-DRUI v1.4.4 PASS | 4 agents | 60/60 Skill links | 0 errors, 0 warnings | runtime untested
+DRUI v1.4.5 PASS | 4 agents | 60/60 Skill links | 0 errors, 0 warnings | runtime untested
 ```
 
 四个 Agent 共 **5 个 Skill 目录**：Codex 1、Claude Code 1、Antigravity 2、Cursor 1；各有 12 个内置 Skills，故 60/60。**`--agents all` 现在统一包含 Codex、Claude、Antigravity、Cursor 四个 Agent**。若只安装 Codex：安装命令使用 `--agents codex`，验证使用 `drui verify --agents codex`，避免错误地把未选择的三个 Agent 当作安装失败。
@@ -99,6 +99,8 @@ python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,c
 | `MISSING` | 复查安装 Agent 范围，运行 `python3 ~/GameAgentKit/gamekit.py link --agents codex,claude,antigravity,cursor` 后重新 verify |
 | `BROKEN` | 检查 `~/GameAgentKit` 是否被移动；不要自动删除用户文件 |
 | `COLLISION` | `drui verify --verbose`、`drui deps conflicts`；保留用户 Skill，人工处理 |
+| `Unsafe symlinked Skill destination parent` | 已有 `.agents/skills`、`.claude/skills` 等父目录是符号链接；安装器拒绝沿链接写入。先手工检查并决定目录布局，**不要自动删除或覆盖** |
+| `--copy is unsupported` | 只支持 GitHub 源码 + 托管符号链接；复制目录无法通过当前版本验证，也无法可靠更新，命令会在写入前失败 |
 | `INVALID` | 核对仓库 Skill 内容与 `VERSION`；停止宣称验证成功 |
 | `PASS` 但 Agent 找不到 Skill | 在目标 Agent 新会话说 `Use the drui skill and list its workflows` 并检查它读取的实际文件 |
 | `deps check` 无 baseline | 先 `drui deps list`；用户审查后可自愿执行 `drui deps lock` |

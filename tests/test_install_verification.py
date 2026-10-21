@@ -128,6 +128,60 @@ class InstallVerificationTests(unittest.TestCase):
         self.assertIn('may shadow', ' '.join(report['warnings']))
         self.assertIn('NOT TESTED', report['verification'])
 
+    def test_late_symlinked_agent_parent_is_preflighted_before_other_agent_writes(self):
+        outside = Path(self.workspace.name) / 'outside-cursor'
+        outside.mkdir()
+        (self.home / '.cursor').symlink_to(outside, target_is_directory=True)
+        failed = self.install('all', expected=1)
+        self.assertIn('Unsafe symlinked Skill destination parent', failed.stderr)
+        self.assertFalse(self.root.exists(), 'Source must not be copied first')
+        self.assertFalse((self.home / '.agents').exists(), 'No earlier Codex links')
+        self.assertFalse((self.home / '.claude').exists(), 'No earlier Claude links')
+        self.assertFalse((self.home / '.local').exists(), 'No CLI link')
+        self.assertEqual(list(outside.iterdir()), [])
+        # Also protect a later link operation when some Agents are already installed.
+        (self.home / '.cursor').unlink()
+        self.install('codex')
+        (self.home / '.cursor').symlink_to(outside, target_is_directory=True)
+        failed_link = subprocess.run(
+            [sys.executable, str(self.root / 'gamekit.py'), 'link',
+             '--root', str(self.root), '--agents', 'all'],
+            env=self.env, text=True, capture_output=True, timeout=20)
+        self.assertNotEqual(failed_link.returncode, 0)
+        self.assertFalse((self.home / '.claude').exists())
+        self.assertTrue((self.home / '.agents' / 'skills' / 'drui').is_symlink())
+        self.assertEqual(list(outside.iterdir()), [])
+
+    def test_rejects_symlinked_agent_parent_without_outside_writes(self):
+        outside = Path(self.workspace.name) / 'outside-skills'
+        outside.mkdir()
+        agent_root = self.home / '.agents'
+        agent_root.symlink_to(outside, target_is_directory=True)
+        proc = self.install('codex', expected=1)
+        self.assertIn('Unsafe symlinked Skill destination parent', proc.stderr)
+        self.assertEqual(list(outside.iterdir()), [])
+        self.assertTrue(agent_root.is_symlink())
+        self.assertFalse((outside / 'skills').exists())
+
+    def test_copy_option_fails_before_any_install_or_link_writes(self):
+        proc = subprocess.run([sys.executable, str(SOURCE / 'gamekit.py'),
+                               'install', '--root', str(self.root), '--agents', 'codex',
+                               '--copy'], env=self.env, text=True,
+                              capture_output=True, timeout=15)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn('--copy is unsupported', proc.stderr)
+        self.assertFalse(self.root.exists())
+        self.assertFalse((self.home / '.agents').exists())
+        # Existing healthy install remains unaffected by a rejected link --copy.
+        self.install('codex')
+        link = self.home / '.agents' / 'skills' / 'drui'
+        before = link.readlink()
+        proc = subprocess.run([sys.executable, str(self.root / 'gamekit.py'),
+                               'link', '--root', str(self.root), '--agents', 'codex', '--copy'],
+                              env=self.env, text=True, capture_output=True, timeout=15)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertEqual(link.readlink(), before)
+
     def test_dry_run_never_provisions_or_claims_success(self):
         proc = subprocess.run([sys.executable, str(SOURCE / 'gamekit.py'), 'install', '--root', str(self.root),
                                '--agents', 'cursor', '--dry-run'], capture_output=True,

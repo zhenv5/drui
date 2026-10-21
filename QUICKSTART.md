@@ -7,7 +7,7 @@ DRUI is a set of 12 bundled Skills and 20 independent workflows for game UI/UX d
 Visit https://github.com/zhenv5/drui/releases/latest and choose the newest stable tag `vX.Y.Z`. Run:
 
 ```bash
-git clone --depth 1 --branch v1.4.4 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.5 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 DRUI_LOG=$(mktemp)
 if bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor >"$DRUI_LOG" 2>&1; then
@@ -19,7 +19,7 @@ else
 fi
 ```
 
-Replace `v1.4.4` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions. **Default installation and `--agents all` now include all four Agents**, for 60 expected Skill links. If you only need Codex, install with `--agents codex` and verify with `--agents codex`. A successful command exit code means the final filesystem verifier also passed; runtime loading still requires an Agent test.
+Replace `v1.4.5` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions. **Default installation and `--agents all` now include all four Agents**, for 60 expected Skill links. If you only need Codex, install with `--agents codex` and verify with `--agents codex`. A successful command exit code means the final filesystem verifier also passed; runtime loading still requires an Agent test.
 
 ## Update directly from GitHub (no archive)
 
@@ -74,3 +74,5 @@ drui verify --json
 ```
 
 The default verifier prints one line and checks all **four** Agents; failures add up to three terse details. Antigravity uses two search paths, so all four agents currently mean 60 expected links (not 48). `--agents all` now means all four Agents, including Cursor. Each bundled Skill reports the **GameAgentKit release version**, not an independently published Skill version. Third-party Skills are user-owned, and their version is `unknown` unless declared in their own `SKILL.md` metadata. `OK` means the symlink targets the expected local bundled Skill and its frontmatter is valid. `MISSING`, `BROKEN`, `COLLISION` or `INVALID` require attention; verification returns a nonzero status when the selected installation is incomplete. A project-local Skill may shadow a global one (use `--project /path/to/game` for warnings). **This is a filesystem audit, not proof that a real Agent loaded or executed the Skill.**
+
+**Directory safety:** If an existing Agent Skill parent directory is itself a symlink, installation halts before writing to that path. Inspect the layout and choose how to proceed manually; DRUI will not delete or follow that symlink. `--copy` is intentionally unsupported because DRUI verifies and upgrades managed Skill links.

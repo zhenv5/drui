@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.4.5 — TL and novice repeat audit
+
+- Preflight **all** Agent and CLI parent directories before creating any files; refuse symlinked parents, avoiding partial installations when a later Agent path is unsafe.
+- Fail fast without writes on unsupported `install/link --copy` options, since bundled Skill verification and Git updates require managed symlinks.
+- Add isolated regression tests and new TL/first-time-user review reports; clarify safe recovery in installation docs.
+- Preserve four-Agent installation, concise verifier, existing user files, 12 bundled Skills and 20 workflows.
+
 ## v1.4.4 — TL and first-time user onboarding audit
 
 - Make `--agents all` mean all four supported Agents, consistent with default verification.
