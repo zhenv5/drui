@@ -37,7 +37,7 @@ Copy this prompt to the coding agent to update an existing GitHub checkout safel
 Prerequisites: Git, Python 3, macOS or Linux, permission to create local Skill links. First check the [latest official stable release](https://github.com/zhenv5/drui/releases/latest) and substitute the matching Tag in the clone command.
 
 ```bash
-git clone --branch v1.4.0 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --branch v1.4.1 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 # Save detailed installation logs locally; print only the mandatory compact verification.
 DRUI_LOG=$(mktemp)
