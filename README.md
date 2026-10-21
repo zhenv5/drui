@@ -6,6 +6,16 @@
 
 **Installation and updates use the official GitHub source repository, not a release ZIP.** GitHub may automatically offer “Source code (zip)” downloads, but those are not DRUI installers. Use Git to fetch stable version tags.
 
+## Start here — 新手 1 分钟上手
+
+**Already using a coding Agent?** Copy the **Install via Agent** prompt below to Codex, Claude Code, Antigravity or Cursor with terminal access. It installs DRUI from the official reviewed GitHub Release Tag and runs a mandatory short verification.
+
+**Prefer Terminal?** Jump to [manual GitHub source installation](#manual-github-source-installation) or the [Chinese installation guide](docs/INSTALL_AND_VERIFY.md). DRUI does **not** require ZIP files or an account registration.
+
+**After installation:** run `"$HOME/GameAgentKit/scripts/drui" verify` (one-line result), then `"$HOME/GameAgentKit/scripts/drui" start`. Try a safe, read-only Agent instruction: `Use the drui skill, stage usability-review, on this project; report findings, do not edit files.`
+
+Default install/`--agents all` now covers **all four** Agents (60 managed links over 5 directories). To install only Codex, use `--agents codex` and verify with `drui verify --agents codex`; otherwise uninstalled Agents are correctly reported missing. Real Agent loading still requires a test inside the target Agent.
+
 ## Install via Agent
 
 Copy the entire following prompt into Codex, Claude Code, Antigravity or Cursor with local terminal access. You do **not** need DRUI already installed.
@@ -37,7 +47,7 @@ Copy this prompt to the coding agent to update an existing GitHub checkout safel
 Prerequisites: Git, Python 3, macOS or Linux, permission to create local Skill links. First check the [latest official stable release](https://github.com/zhenv5/drui/releases/latest) and substitute the matching Tag in the clone command.
 
 ```bash
-git clone --branch v1.4.3 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --branch v1.4.4 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 # Save detailed installation logs locally; print only the mandatory compact verification.
 DRUI_LOG=$(mktemp)
@@ -50,7 +60,7 @@ else
 fi
 ```
 
-**Final acceptance requires `drui verify` to exit 0:** the installer intentionally skips user-owned same-name Skills and might itself return success despite a collision. The failure branch above also returns nonzero. Full instructions and troubleshooting: [Install & Verify](docs/INSTALL_AND_VERIFY.md).
+**The installer itself now exits nonzero if its final Skill verification fails.** It preserves user-owned same-name Skills and never claims a collision was installed. The manual command also runs `drui verify` separately; only a zero exit status confirms filesystem installation. Full instructions and troubleshooting: [Install & Verify](docs/INSTALL_AND_VERIFY.md).
 
 `drui` is linked at `~/.local/bin/drui`; add that directory to PATH if necessary. Installation never overwrites a preexisting Skill or CLI of the same name. Four agents currently span five Skill search paths (Antigravity uses two), so a clean install can report 60/60 slots rather than 48/48. The final verifier audits files, not actual Agent loading. If `~/GameAgentKit` exists, do not repeat `git clone` into it.
 
@@ -68,7 +78,8 @@ The updater checks GitHub's latest stable Release to find a reviewed version Tag
 ## Start using DRUI
 
 ```bash
-drui verify                        # one-line result; up to 3 failures if incomplete
+drui verify                        # one-line result for all 4 Agents
+drui verify --agents codex         # scoped verification for Codex-only installs
 drui verify --verbose              # full Skill names, versions, paths and conflicts
 drui verify --json                 # machine-readable verification report
 drui start                         # first minute overview

@@ -12,7 +12,7 @@ python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,c
 "$HOME/GameAgentKit/scripts/drui" verify    # must exit 0
 ```
 
-Only a successful final `verify` (not merely `install.sh` or `link`) proves that the expected local Skill links have been installed: an existing user-owned same-name Skill is preserved and can cause missing expected links even when the installer exited 0. Four agents use five Skill slots, so the default full check expects 60 links. Use `verify --verbose` for details or `--json` for tooling. The legacy `--agents all` alias does not include Cursor.
+As of v1.4.4, `install.sh` and `link` **propagate failed post-install verification via a nonzero exit code** (while preserving user-owned same-name Skills). Keep a separately executed `verify` for audit or specific-Agent scope. Four agents use five Skill slots, so the default full check expects 60 links. Use `verify --verbose` for details or `--json` for tooling. `--agents all` now includes Cursor, consistent with the default verification scope.
 
 `--check` is read-only, and update requires an official origin and clean Git checkout. Checkout is not crash-atomic; inspect status after an interruption, do not forcibly reset user modifications.
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.4.4 — TL and first-time user onboarding audit
+
+- Make `--agents all` mean all four supported Agents, consistent with default verification.
+- Make `install.sh` and `gamekit.py link` fail with nonzero status if final Skill verification is incomplete; never overwrite existing user Skills.
+- Clarify one-Agent install/verify scopes; simplify README first-use path and add a safe read-only first workflow.
+- Add separate TL and novice-lens audit evidence, explicit regression checks and GitHub CI coverage.
+
 ## v1.4.3 — Documentation-wide Tech Lead audit
 
 - Correct current GitHub Tag installation examples, four-Agent verification instructions, source release contribution workflow, and third-party baseline guidance.

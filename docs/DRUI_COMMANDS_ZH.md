@@ -70,7 +70,7 @@ bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
 "$HOME/GameAgentKit/scripts/drui" verify --json      # 机器可读
 ```
 
-完整四 Agent 共 5 个安装目录 × 12 个内置 Skills = **60** 项。安装器因保护用户同名 Skill 可能跳过链接而返回 0，务必再运行 verify。仅通过文件检查不意味着 Agent 已真正读取。旧别名 `--agents all` 不含 Cursor。
+完整四 Agent 共 5 个安装目录 × 12 个内置 Skills = **60** 项。安装器会保护同名用户 Skill，验证不完整会返回非零码，仍应单独运行 verify。仅通过文件检查不意味着 Agent 已真正读取；`--agents all` 包含 Cursor。
 
 ## 在 Mac 终端里使用（命令不会自动启动 Agent）
 

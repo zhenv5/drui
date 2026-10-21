@@ -47,6 +47,13 @@ class InstallVerificationTests(unittest.TestCase):
         self.assertTrue(all(x['status'] == 'OK' for a in data['agents'] for x in a['skills']))
         self.assertTrue(all(x['version_source'].startswith('GameAgentKit bundle') for a in data['agents'] for x in a['skills']))
 
+    def test_all_alias_installs_and_verifies_the_same_four_agents(self):
+        installation = self.install('all')
+        self.assertIn('PASS | 4 agents | 60/60 Skill links', installation.stdout)
+        result = self.run_drui('verify')
+        self.assertIn('PASS | 4 agents | 60/60 Skill links', result.stdout)
+        self.assertEqual(len(result.stdout.strip().splitlines()), 1)
+
     def test_compact_cli_is_one_line_and_preserves_verbose_and_json(self):
         self.install('codex')
         clean = self.run_drui('verify', '--agents', 'codex').stdout.strip().splitlines()
