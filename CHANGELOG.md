@@ -31,7 +31,7 @@
 - README / QUICKSTART / clipboard Agent prompts now use GitHub source; CI and Releases no longer publish installer archives.
 - No backwards compatibility for legacy ZIP-managed installations (new installation baseline).
 
-# Changelog
+---
 
 ## v1.2.1 — Safety and installation audit
 

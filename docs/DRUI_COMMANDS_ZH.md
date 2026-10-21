@@ -3,7 +3,7 @@
 `drui` 是主流程 Skill，包含 20 个工作流；独立的 `oil-ui-plus` 是我们原创、内置的近似 Pro UI 方法 Skill（**非官方 Pro**）。按 `oil-ui-pro`（实际安装时）> `oil-ui-plus` > `oil-ui` > DRUI 兜底自动选择。
 
 
-## V1.7：Oil UI Plus 与调用顺序
+## Oil UI Plus 与调用顺序
 
 UI 方法统一优先级（不代表顺序执行四次）：**`oil-ui-pro`（官方、实际已安装） > `oil-ui-plus`（GameAgentKit 原创内置） > `oil-ui`（已安装开源版） > DRUI 其他内置通用流程**。DRUI 永远负责 workflow 编排、三方独立审查及验收。详见 [UI_SOURCE_ROUTING.md](UI_SOURCE_ROUTING.md)。
 
@@ -75,7 +75,7 @@ bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
 ## 在 Mac 终端里使用（命令不会自动启动 Agent）
 
 ```bash
-# 首次安装或升级后使用 kit 链接一次（不覆盖已有同名命令）
+# 如升级后需要补齐链接，可使用（不会覆盖已有同名命令）
 python3 ~/GameAgentKit/gamekit.py link --agents codex,claude,antigravity,cursor
 
 # 只列清单 / 查看具体说明 / 生成执行 Prompt

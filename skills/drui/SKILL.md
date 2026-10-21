@@ -16,7 +16,7 @@ DRUI is the **orchestrator**. The original, bundled Pro-like UI layer is now nam
 
 Pick one PRIMARY UI method. **Never silently claim Pro or confuse Plus with Pro.** Recheck the selected SKILL.md from the target Agent, record `requested_source`, `selected_source`, `actual_skill_read` and `fallback_reason`. User overrides such as `drui full --ui-source plus` take precedence; if the requested source is missing, stop and report it rather than auto-downgrade. Generic DRUI workflow and independent reviewer gates always apply, regardless of method. See `docs/UI_SOURCE_ROUTING.md`.
 
-## External Skill upgrade & compatibility guard (V1.8)
+## External Skill upgrade & compatibility guard
 
 - `drui update` updates ONLY the GameAgentKit release. It NEVER updates `oil-ui-pro`, `oil-ui` or any third-party Skill.
 - `drui deps list` enumerates installed external Skills; `drui deps lock` records the initial file hashes; `drui deps check` detects additions, removals, or changed contents; `drui deps approve --name <skill> --evidence REVIEW.md` accepts a new fingerprint ONLY after independent compatibility review.
@@ -39,7 +39,7 @@ Read, in order:
 - **Component deep dive**: polish one component's every state, interaction, content variation and breakpoint.
 - **Mini-game scene**: playfield > controls > feedback > pause/end; preserve input legibility and frame budget.
 
-## Friendly onboarding and discoverability (v1.1.0)
+## Friendly onboarding and discoverability
 
 - `drui help` / `drui start` in Agent chat: **explain the workflow choice and first-use steps only**. Do not install or execute a workflow as a side effect.
 - `drui list --beginner`: show `full`, `visual-review`, `usability-review`, `game-feel`, `review-triad`, `review-loop` with plain-language guidance.
@@ -47,7 +47,7 @@ Read, in order:
 - `drui help <stage>`: explain when it helps, what it delivers, whether the stage can change code, and a concrete sample. `drui help commands` is the CLI reference.
 - **Terminal vs Agent:** terminal `drui prompt <stage>` prints a prompt only, while a user explicitly requesting `Use the drui skill, stage <stage>, on this project` in an Agent chat asks the Agent to execute. Do not claim execution if the Agent has not actually loaded this Skill.
 
-## DRUI command router — `drui list` (V1.5)
+## DRUI command router — `drui list`
 
 **Interpret direct chat invocations** as DRUI requests when this Skill is installed:
 
@@ -87,7 +87,7 @@ Independently runnable stages are defined under `~/GameAgentKit/prompts/drui/sta
 
 **Stage contracts:** `discover`, `plan`, `visual-review`, `usability-review`, and `verify` are analysis/review stages and must not silently change code. `implement`, `fix`, `screenshot-rebuild` and `component-polish` can change code if explicitly requested. Other specialist stages may review only or implement according to the request. **All `review-*` reviewer stages except `review-loop` are strictly read-only.** `full` orchestrates the applicable stages. Absence of a runtime blocks visually scored approval.
 
-## Strict, isolated reviewer workflows (V1.4)
+## Strict, isolated reviewer workflows
 
 - `review-tl` — **Tech Lead** technical correctness, architecture, performance, risks (READ-ONLY).
 - `review-pm` — **Product Manager** user value, onboarding, progression, scope, release readiness (READ-ONLY).
