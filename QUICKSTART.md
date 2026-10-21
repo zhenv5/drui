@@ -18,7 +18,7 @@ fi
 "$HOME/GameAgentKit/scripts/drui" start
 ```
 
-Replace `v1.4.0` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions.
+Replace `v1.4.1` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions.
 
 ## Update directly from GitHub (no archive)
 
