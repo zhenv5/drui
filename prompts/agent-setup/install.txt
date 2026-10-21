@@ -2,5 +2,5 @@
 1. 检查 git、Python 3、本机已有 DRUI 路径、Codex/Claude Code/Antigravity/Cursor 的 Skill 名称冲突；不要移动或覆盖用户自己的 Skills。检查最新 GitHub 正式 Release 的版本 Tag（必须 vX.Y.Z，非预发布），确认发布者及仓库。
 2. 若 ~/GameAgentKit 已存在，停止首次安装并报告，不要覆盖。运行 git clone --depth 1 --branch <确认的稳定Tag> https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"（替换 <确认的稳定Tag> 为真实版本）。必须确保远端 origin 是官方仓库、仓库 VERSION 与 Tag 一致，再审查 install.sh 和 gamekit.py。
 3. 在源码根目录执行 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run；确认仅创建安全的 Skill/CLI 链接后，再执行不带 --dry-run 的命令。占用的同名 Skill 保留，不要强行替换。不要执行第三方 Skill 安装器。
-4. 完成后检查 doctor、version、list --beginner 和 deps conflicts；详细命令输出保存在本机日志，不要粘贴给用户。最后必须运行 "$HOME/GameAgentKit/scripts/drui" verify --agents codex,claude,antigravity,cursor，向用户强制输出且仅输出紧凑验证摘要（通常一行；失败时最多附三项具体失败）。不能声称 Agent 已实际加载，除非真实验证。
+4. 完成后检查 doctor、version、list --beginner 和 deps conflicts；完整日志留在本机，不粘贴长输出。必须最后运行 "$HOME/GameAgentKit/scripts/drui" verify --agents codex,claude,antigravity,cursor，检查真实退出码；只有 verify 返回 0 才能认定本地 Skill 安装成功（install.sh 即使跳过同名冲突也可能返回 0）。只向用户输出 verify 的简短摘要（通常一行、失败最多三项）及必要阻塞说明。未建立外部 deps lock 时 deps check 可能报错，不算 DRUI 安装失败，严禁自动 lock/approve；不要声称 Agent 已实际加载，除非在 Agent 内真正验证。
 所有更新和安装必须来自 GitHub 源码 Tag；不使用 Release ZIP、curl|bash、git pull 覆盖、force checkout。DRUI 永不自动升级或批准第三方 Skills。
