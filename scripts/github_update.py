@@ -1,7 +1,7 @@
 """GitHub source-only updater for DRUI.
 
 The canonical ~/GameAgentKit installation is a git clone of the official
-repository, checked out at an immutable public GitHub Release tag. No ZIP,
+repository, checked out at a reviewed public GitHub Release tag (administrator-mutable). No ZIP,
 installer download, archive extraction, or third-party Skill mutation occurs.
 """
 from __future__ import annotations

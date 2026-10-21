@@ -29,3 +29,5 @@ DRUI never upgrades third-party Skills. `deps check` requires an opt-in approved
 7. Verify the canonical GitHub clone/dry-run/install/`drui verify` flow in CI. Genuine Agent discovery and execution still require separate local Codex/Claude/Antigravity/Cursor testing; filesystem verification alone must not be described as Agent-loaded.
 
 **Trust notes:** A Git Tag is not intrinsically immutable or signed; protect repository administration and release permissions. An interrupted checkout is not an atomic upgrade.
+
+**Install safety check:** `install --copy` and `link --copy` fail before any file changes; only managed symlink deployments are supported. A symlinked parent in Agent Skill target paths is refused (prevents unintended writes elsewhere). Do not silently delete or dereference user-owned directories; manually resolve before retrying. Document this in the novice setup guide.

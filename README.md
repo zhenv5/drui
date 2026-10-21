@@ -14,7 +14,7 @@
 
 **After installation:** run `"$HOME/GameAgentKit/scripts/drui" verify` (one-line result), then `"$HOME/GameAgentKit/scripts/drui" start`. Try a safe, read-only Agent instruction: `Use the drui skill, stage usability-review, on this project; report findings, do not edit files.`
 
-Default install/`--agents all` now covers **all four** Agents (60 managed links over 5 directories). To install only Codex, use `--agents codex` and verify with `drui verify --agents codex`; otherwise uninstalled Agents are correctly reported missing. Real Agent loading still requires a test inside the target Agent.
+Default install/`--agents all` covers **all four** Agents (60 managed links over 5 directories). To install only Codex, use `--agents codex` and verify with `drui verify --agents codex`; otherwise uninstalled Agents are correctly reported missing. Real Agent loading still requires a test inside the target Agent.
 
 ## Install via Agent
 
@@ -47,7 +47,7 @@ Copy this prompt to the coding agent to update an existing GitHub checkout safel
 Prerequisites: Git, Python 3, macOS or Linux, permission to create local Skill links. First check the [latest official stable release](https://github.com/zhenv5/drui/releases/latest) and substitute the matching Tag in the clone command.
 
 ```bash
-git clone --branch v1.4.4 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --branch v1.4.5 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 # Save detailed installation logs locally; print only the mandatory compact verification.
 DRUI_LOG=$(mktemp)
@@ -101,3 +101,5 @@ The CLI generates prompts, not a running coding agent. User tasks with code chan
 - Real Agent loading, screenshots, builds and true three-party independent reviews require runtime evidence; printed prompts alone do not prove completion.
 
 See [QUICKSTART.md](QUICKSTART.md) and the [canonical installation and verification guide](docs/INSTALL_AND_VERIFY.md) for setup, updates and troubleshooting.
+
+**Installation safety:** DRUI rejects symlinked intermediate Agent Skill folders instead of following them to an unexpected filesystem location. Do not use the legacy `install --copy` / `link --copy` options: copied Skills cannot be reliably verified or updated, so both commands reject that mode before writing. See [troubleshooting](docs/INSTALL_AND_VERIFY.md).
