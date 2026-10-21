@@ -58,10 +58,10 @@ python3 ~/GameAgentKit/gamekit.py review evaluate \
 
 ## GitHub 源码安装与验证
 
-始终参考 [统一安装与验证手册](INSTALL_AND_VERIFY.md) 以及 [最新稳定 Release](https://github.com/zhenv5/drui/releases/latest)，不要复用旧版本号或 ZIP 安装说明。首次安装从已核对的稳定 Tag 克隆（当前文档示例：`v1.4.4`）：
+始终参考 [统一安装与验证手册](INSTALL_AND_VERIFY.md) 以及 [最新稳定 Release](https://github.com/zhenv5/drui/releases/latest)，不要复用旧版本号或 ZIP 安装说明。首次安装从已核对的稳定 Tag 克隆（当前文档示例：`v1.4.5`）：
 
 ```bash
-git clone --depth 1 --branch v1.4.4 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.5 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
 "$HOME/GameAgentKit/scripts/drui" verify   # 必须为退出码 0
