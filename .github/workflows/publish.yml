@@ -21,7 +21,7 @@ jobs:
       - name: Verify source release
         run: |
           set -eu
-          test "$(cat VERSION)" = "1.4.0"
+          test "$(cat VERSION)" = "1.4.1"
           python3 -m compileall -q gamekit.py scripts tests
           python3 -m unittest discover -s tests -v
           bash tests/smoke_git_install.sh
