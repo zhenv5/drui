@@ -19,3 +19,7 @@
 6. For `FAIL`, use `drui verify --verbose` and consult the troubleshooting table; never force-overwrite personal Skills.
 
 **Not verified:** No real beginner observed independently; no macOS app testing, no runtime Agent skill invocation. Confidence limited to code/doc walkthrough + CI test evidence.
+
+## Third-pass beginner re-check
+
+A failure on the fourth Agent should not unexpectedly leave the first three installed. The new install/link preflight rejects existing redirected destination directories **before** starting any writes. Beginner action: inspect the offending path; do not force-remove it. Retrying after manually resolving the layout is safe but should still run a scoped `drui verify`.

@@ -18,3 +18,7 @@
 - Inspect GitHub CI logs and run a fresh independent source review after fixes. Document any new issues instead of claiming impossibility of future bugs.
 
 **Scope limitation:** Direct Mac/GUI Agent Skill loading, GitHub signer attestation, update interruption recovery, and symlink race-free guarantees not established by local CI. They remain separate acceptance activities.
+
+## Third-pass independent code re-check (after initial two fixes)
+
+New issue TL-05-04 (P1): a late Agent directory symlink (for example Cursor), detected only when it was about to be linked, could leave earlier Codex/Claude links partially created. Added whole-request parent-path preflight before `copy_bundle` / `provision`, and a regression that injects a late malicious symlink and confirms **no earlier Agent or CLI links are created**. The per-entry check remains as a second defense. This preflight is not race-atomic: adversarial concurrent filesystem modification is a separate threat model.
