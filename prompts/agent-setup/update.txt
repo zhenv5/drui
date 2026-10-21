@@ -2,5 +2,5 @@
 1. 确认 ~/GameAgentKit 是 Git checkout，origin 指向官方仓库，无未提交的源码改动/未追踪文件；先运行 drui version、drui deps check、drui deps conflicts，记录旧版本和独立安装的用户 Skills。不允许覆盖用户数据，也不允许自动更新、lock 或 approve 第三方 Skills。
 2. 运行 "$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --check；查看 GitHub 正式 Release 变更和 Tag。若无新版本则停止；如果当前仓库有改动，停止并报告，不要 git reset --hard、clean 或 force checkout。
 3. 确认无冲突后执行 "$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --yes。DRUI 使用 Git 获取官方 Tag、验证源码 VERSION，再切换 checkout；不会下载/解压 ZIP。异常中断时保留现场供人工修复，不保证断电事务原子性。
-4. 完成后运行 python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,cursor（只链接空位），检查 doctor、version、list --beginner、deps check 和 deps conflicts；日志留本机，不粘贴长清单。最后必须运行 "$HOME/GameAgentKit/scripts/drui" verify --agents codex,claude,antigravity,cursor，向用户强制输出且仅输出紧凑验证摘要（通常一行；失败时最多附三项具体失败）。不得声称已实际加载 Agent。
+4. 完成后运行 python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,cursor（只链接空位），检查 doctor、version、list --beginner、deps check 和 deps conflicts；日志留本机不粘贴长清单，未建立依赖 lock 时 deps check 的报错不代表 DRUI 安装失败，严禁自动 lock/approve。最后必须运行 "$HOME/GameAgentKit/scripts/drui" verify --agents codex,claude,antigravity,cursor 并读取退出码；只有 verify 返回 0 才能确认本地 Skill 安装成功（link 即使跳过冲突也可能返回 0）。只向用户输出一行验证摘要（失败最多三项）和必要的阻塞原因，不声称 Agent 已真实加载。
 整个流程严格禁止 curl|bash、静默依赖升级以及对已有第三方 Skill 路径的写入。
