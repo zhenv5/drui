@@ -25,6 +25,9 @@ def digest_skill(directory):
     h = hashlib.sha256()
     count, total = 0, 0
     for base, dirs, files in os.walk(directory, followlinks=False):
+        for d in dirs:
+            if d not in OMIT and (Path(base) / d).is_symlink():
+                raise RuntimeError(f'External Skill contains linked directory; manual review required: {Path(base) / d}')
         dirs[:] = sorted(d for d in dirs if d not in OMIT)
         for name in sorted(files):
             if name in OMIT:

@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.2.1 — Safety and installation audit
+
+- Ensure the bundled `drui` command is executable after ZIP extraction and upgrades; publish it with executable Git mode.
+- Validate every HTTPS redirect from GitHub downloads against exact trusted GitHub/CDN hosts; refuse unsafe destinations.
+- Upgrade preflight checks all paths before replacement; existing managed files are backed up first and a normal write exception triggers best-effort rollback. Crashes or power loss can still leave partial changes.
+- Include CHANGELOG, SECURITY, CONTRIBUTING, and LICENSE in upgrades; fix stale current-version install examples.
+- Reject nested directory symlinks in external Skills instead of silently skipping their contents.
+- Clarify that Cursor requires explicit selection; `--agents all` retains its previous meaning.
+- Add focused regression tests for the above cases.
+
 ## v1.2.0 — Copy-to-Agent installation and update prompts
 
 - Added two copy-ready prompts at the top of GitHub README, usable before DRUI is installed; Source of Truth: `prompts/agent-setup/`.

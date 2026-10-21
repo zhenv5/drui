@@ -28,7 +28,29 @@ TAG_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
 MAX_ARCHIVE_BYTES = 25 * 1024 * 1024
 MAX_UNPACKED_BYTES = 40 * 1024 * 1024
 MAX_ZIP_FILES = 500
-USER_AGENT = "GameAgentKit/1.6 (+https://github.com)"
+USER_AGENT = "GameAgentKit/1.2 (+https://github.com/zhenv5/drui)"
+# GitHub release assets redirect to the official GitHub CDN. Never trust an
+# arbitrary HTTPS redirect from a nominally legitimate release URL.
+TRUSTED_REDIRECT_HOSTS = frozenset({
+    "github.com", "api.github.com", "release-assets.githubusercontent.com",
+    "objects.githubusercontent.com",
+})
+
+
+def _ensure_trusted_url(url: str, *, redirected: bool = False) -> None:
+    parsed = urllib.parse.urlsplit(url)
+    allowed = TRUSTED_REDIRECT_HOSTS if redirected else {"github.com", "api.github.com"}
+    if (parsed.scheme != "https" or parsed.hostname not in allowed or
+            parsed.username is not None or parsed.password is not None or
+            parsed.port not in (None, 443)):
+        raise RuntimeError(f"Refusing untrusted GitHub download URL: {url}")
+
+
+class _TrustedGitHubRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        _ensure_trusted_url(newurl, redirected=True)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
 
 
 def normalize_repo(raw: str) -> str:
@@ -51,12 +73,13 @@ def semver(tag: str) -> tuple[int, int, int]:
 
 
 def _request(url: str, *, limit: int) -> bytes:
-    parsed = urllib.parse.urlparse(url)
-    if parsed.scheme != "https" or parsed.hostname not in {"api.github.com", "github.com"}:
-        raise RuntimeError(f"Refusing non-GitHub HTTPS source: {url}")
+    _ensure_trusted_url(url)
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/vnd.github+json"})
+    # A dedicated opener enforces the same allowlist on every redirect hop.
+    opener = urllib.request.build_opener(_TrustedGitHubRedirect())
     try:
-        with urllib.request.urlopen(req, timeout=25) as response:
+        with opener.open(req, timeout=25) as response:
+            _ensure_trusted_url(response.geturl(), redirected=True)
             if response.status != 200:
                 raise RuntimeError(f"GitHub HTTP {response.status} at {url}")
             data = response.read(limit + 1)

@@ -1,9 +1,9 @@
-# DRUI — GameAgentKit v1.2.0
+# DRUI — GameAgentKit v1.2.1
 
 **DRUI** is the public-facing skill/workflow command; **GameAgentKit** is the internal Python toolkit and installation root. The names intentionally differ.
 
 **Official repository:** https://github.com/zhenv5/drui  
-**Installable release asset:** `GameAgentKit-v1.2.0.zip` from [GitHub Releases](https://github.com/zhenv5/drui/releases/tag/v1.2.0). Do **not** use GitHub's generic “Source code (zip)” for the installer because it contains a different outer directory.
+**Installable release asset:** `GameAgentKit-v1.2.1.zip` from [GitHub Releases](https://github.com/zhenv5/drui/releases/tag/v1.2.1). Do **not** use GitHub's generic “Source code (zip)” for the installer because it contains a different outer directory.
 
 **Note:** v1.0.0 is the first public release. Documents named `CHANGELOG_v1.1.md` through `CHANGELOG_v1.7.md` describe the toolkit's earlier internal development iterations, not published releases following v1.0.0.
 
@@ -20,7 +20,7 @@
 
 1. 先确认本机可运行 Python 3、拥有可写的用户目录，并确认你能在此 Agent 会话中使用终端。如无法运行命令，明确说明，绝不声称已安装。检查 ~/GameAgentKit、~/.local/bin/drui 及 Codex/Claude Code/Antigravity/Cursor 的既有 Skills；不得覆盖用户已有文件、目录、不同来源的同名 Skill 或 symlink。如果已经安装，先报告版本并改用官方更新流程，不要直接重新安装。
 2. 访问 https://github.com/zhenv5/drui/releases/latest ，确认发布者 zhenv5/drui，选择最新的正式（非 draft / prerelease）版本。只获取该 Release 的 GameAgentKit-vX.Y.Z.zip 和同名 .sha256 校验文件；核对版本与 SHA-256，拒绝校验失败、重定向到不可信站点或不符合预期结构的包。SHA-256 仅用于完整性，不等同于签名或代码安全保证。不要运行 curl | bash 或来历不明的第三方安装脚本。
-3. 在临时目录安全解包并阅读 README.md、QUICKSTART.md、install.sh 和关键安装逻辑；留意危险脚本、外部依赖、权限和将写入的路径。先执行安装脚本的 --dry-run，确认不会覆盖用户自有 Skill 后再执行安装。默认安装至 ~/GameAgentKit，并为本机可用的 Agent 建立共享 Skill 入口；不要无故修改 shell profile 或项目文件。若遇到冲突，请保留原文件并列出需要我确认的决定，不要强行覆盖。
+3. 在临时目录安全解包并阅读 README.md、QUICKSTART.md、install.sh 和关键安装逻辑；留意危险脚本、外部依赖、权限和将写入的路径。先执行安装脚本的 --dry-run，确认不会覆盖用户自有 Skill 后再执行安装。默认安装至 ~/GameAgentKit。注意 `--agents all` 只包括 Codex、Claude Code、Antigravity；若检测到 Cursor 且用户希望启用，需另行运行 `link --agents cursor`，同样保持原有 Skill 不变；不要无故修改 shell profile 或项目文件。若遇到冲突，请保留原文件并列出需要我确认的决定，不要强行覆盖。
 4. 通过实际命令检查：python3 ~/GameAgentKit/gamekit.py doctor --agents all（如果只安装部分 Agent 则使用相同 scope）、python3 ~/GameAgentKit/scripts/drui version、python3 ~/GameAgentKit/scripts/drui start、python3 ~/GameAgentKit/scripts/drui deps conflicts。若 drui 已进入 PATH，也验证 drui list --beginner。把版本、安装位置、Agent 覆盖范围、检查结果、潜在冲突和剩余手动步骤汇报给我。不存在运行环境时，不得虚报成功。
 5. 外部油 UI/其他第三方 Skills 始终由用户或其发布者管理：不要自动安装、升级、删除或批准外部依赖；不要创建未经审查的 deps lock，也不要绕过指纹检查。只安装官方 DRUI 捆绑的 12 个内置 Skills。
 ```
@@ -64,7 +64,7 @@ drui prompt review-loop --project /path/to/game  # print instructions ONLY
 drui help commands              # complete quick command reference
 ```
 
-**Choose by goal:** Can't find the controls → `usability-review` (read-only); unpolished visuals → `visual-review` (read-only); technical/product/user independent feedback → `review-triad` (read-only); review → fix → retest → re-review → `review-loop` (may edit); end-to-end overhaul → `full` (may edit). All 20 workflows and scopes remain in `drui list --json` for tooling. The original `v1.0.0` Release is immutable; v1.1.0 adds onboarding commands.
+**Choose by goal:** Can't find the controls → `usability-review` (read-only); unpolished visuals → `visual-review` (read-only); technical/product/user independent feedback → `review-triad` (read-only); review → fix → retest → re-review → `review-loop` (may edit); end-to-end overhaul → `full` (may edit). All 20 workflows and scopes remain in `drui list --json` for tooling. All published versions remain tagged; see the Releases page for the newest package.
 
 **Agent chat example:** `Use the drui skill, stage usability-review, on this project. Try the main task as a first-time user; report blockers and evidence. Do not edit files.`
 
@@ -150,29 +150,29 @@ python3 ~/GameAgentKit/gamekit.py workflow prompt --stage full
 ### Updated ZIP extraction commands (first install OR upgrade staging)
 
 ```bash
-mkdir -p "$HOME/Downloads/GameAgentKit-v1.0.0"
-unzip "$HOME/Downloads/GameAgentKit-v1.0.0.zip" -d "$HOME/Downloads/GameAgentKit-v1.0.0"
+mkdir -p "$HOME/Downloads/GameAgentKit-v1.2.1"
+unzip "$HOME/Downloads/GameAgentKit-v1.2.1.zip" -d "$HOME/Downloads/GameAgentKit-v1.2.1"
 ```
 
 Then **first install** using the commands below, or **existing install** using the V1.3 upgrade block below. Don't unpack directly over `~/GameAgentKit`.
 
 ## First-time install on Mac / Linux
 
-1. Extract `GameAgentKit-v1.0.0.zip` from the tagged GitHub Release using the `mkdir`/`unzip` commands above; your staging installer is at `~/Downloads/GameAgentKit-v1.0.0/GameAgentKit/install.sh`.
+1. Extract `GameAgentKit-v1.2.1.zip` from the tagged GitHub Release using the `mkdir`/`unzip` commands above; your staging installer is at `~/Downloads/GameAgentKit-v1.2.1/GameAgentKit/install.sh`.
 2. From Terminal:
 
 ```bash
 # Preview without changing anything
-bash ~/Downloads/GameAgentKit-v1.0.0/GameAgentKit/install.sh --root "$HOME/GameAgentKit" --agents all --dry-run
+bash ~/Downloads/GameAgentKit-v1.2.1/GameAgentKit/install.sh --root "$HOME/GameAgentKit" --agents all --dry-run
 
 # Install canonical kit and link skills globally
-bash ~/Downloads/GameAgentKit-v1.0.0/GameAgentKit/install.sh --root "$HOME/GameAgentKit" --agents all
+bash ~/Downloads/GameAgentKit-v1.2.1/GameAgentKit/install.sh --root "$HOME/GameAgentKit" --agents all
 
 # Check skill paths
 python3 ~/GameAgentKit/gamekit.py doctor --agents all
 ```
 
-**`--agents all` = `codex,claude,antigravity`**. Optional `--agents codex,claude,antigravity,cursor`. Other aliases: `claude-code`, `agy`. The tool refuses to overwrite existing skills at those names; conflicts print `SKIP` and require manual resolution. Symlinks are preferred; `--copy` allows systems that cannot use symlinks but copies will not update automatically.
+**`--agents all` = `codex,claude,antigravity` (Cursor is opt-in)**. Optional `--agents codex,claude,antigravity,cursor`. Other aliases: `claude-code`, `agy`. The tool refuses to overwrite existing skills at those names; conflicts print `SKIP` and require manual resolution. Symlinks are preferred; `--copy` allows systems that cannot use symlinks but copies will not update automatically.
 
 ### Global target paths
 
@@ -212,7 +212,7 @@ You can edit a game's `.game-agent-kit/PROFILE.md` to set its actual art, device
 
 ```bash
 # Review proposed install or changes
-bash ~/Downloads/GameAgentKit-v1.0.0/GameAgentKit/install.sh --dry-run
+bash ~/Downloads/GameAgentKit-v1.2.1/GameAgentKit/install.sh --dry-run
 python3 ~/GameAgentKit/gamekit.py attach --project /path/to/game --profile puzzle --dry-run
 
 # Link existing root to another agent (no copying of skills)
@@ -222,8 +222,8 @@ python3 ~/GameAgentKit/gamekit.py link --agents cursor
 python3 ~/GameAgentKit/gamekit.py doctor --agents all --project /path/to/game
 
 # Update the central kit using a *new* extracted package; old files backed up
-python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.0.0/GameAgentKit --dry-run
-python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.0.0/GameAgentKit
+python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.2.1/GameAgentKit --dry-run
+python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.2.1/GameAgentKit
 python3 ~/GameAgentKit/gamekit.py migrate-drui --dry-run   # safe legacy-name check
 python3 ~/GameAgentKit/gamekit.py migrate-drui             # archives old packaged skill and exact links
 python3 ~/GameAgentKit/gamekit.py link --agents all
@@ -289,8 +289,8 @@ If your source is in a different agent's directory or an external repo, change `
 Upgrade from V1.0, V1.1 or V1.2 (after extracting V1.3 into its separate staging folder):
 
 ```bash
-python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.0.0/GameAgentKit --dry-run
-python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.0.0/GameAgentKit
+python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.2.1/GameAgentKit --dry-run
+python3 ~/GameAgentKit/gamekit.py upgrade --from ~/Downloads/GameAgentKit-v1.2.1/GameAgentKit
 python3 ~/GameAgentKit/gamekit.py migrate-drui --dry-run   # safe legacy-name check
 python3 ~/GameAgentKit/gamekit.py migrate-drui             # archives old packaged skill and exact links
 python3 ~/GameAgentKit/gamekit.py link --agents all

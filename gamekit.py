@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import stat
 import shutil
 import sys
 from datetime import datetime, timezone
@@ -12,7 +13,7 @@ from pathlib import Path
 
 from scripts import dependency_guard as depguard
 
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 HERE = Path(__file__).resolve().parent
 AGENT_PATHS = {
     "codex": [".agents/skills"],
@@ -199,6 +200,22 @@ def cmd_ui_sources(args):
 DRUI_CLI = "drui"
 
 
+def ensure_drui_executable(root: Path, *, dry_run=False):
+    """A GitHub Release ZIP extracted by Python may lose UNIX executable bits.
+
+    Only change the toolkit-owned command under its canonical root; this never
+    chmods a user-installed `drui` file or foreign Agent Skill.
+    """
+    source = root / "scripts" / DRUI_CLI
+    if dry_run:
+        return
+    if source.is_symlink() or not source.is_file():
+        fail(f"Missing or unsafe bundled DRUI command: {source}")
+    mode = source.stat().st_mode
+    if not mode & stat.S_IXUSR:
+        source.chmod(mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+
 def link_drui_cli(root: Path, *, dry_run=False, home=None):
     """Safely share the local command via ~/.local/bin without changing shell dotfiles.
 
@@ -208,7 +225,8 @@ def link_drui_cli(root: Path, *, dry_run=False, home=None):
     home = home or Path.home()
     source = root / "scripts" / DRUI_CLI
     if not dry_run and not source.is_file():
-        fail(f"Missing DRUI CLI: {source}. Upgrade/install GameAgentKit 1.5 first.")
+        fail(f"Missing DRUI CLI: {source}. Upgrade/install GameAgentKit first.")
+    ensure_drui_executable(root, dry_run=dry_run)
     target = home / ".local" / "bin" / DRUI_CLI
     print("[DRUI CLI] ~/.local/bin/drui")
     status = ensure_link(target, source, dry_run=dry_run)
@@ -400,6 +418,12 @@ def cmd_doctor(args):
 
 
 def cmd_upgrade(args):
+    """Upgrade managed files with complete preflight, backup, and best-effort rollback.
+
+    Interrupted processes / power loss can still leave partial state; a successful
+    return requires all files updated. User-owned Skills outside bundled names
+    are not enumerated from the local installation.
+    """
     root = Path(args.root).expanduser().resolve()
     src = Path(args.source).expanduser().resolve()
     if src == root:
@@ -407,44 +431,93 @@ def cmd_upgrade(args):
     if not (root / "gamekit.py").is_file() or not (src / "gamekit.py").is_file():
         fail("Source and target must each be a GameAgentKit directory")
     additions = []
-    kept = []
-    # Upgrade only kit-owned files tracked by the bundled tree; never touch custom skills.
-    # Known framework files are updated atomically with backups; skills are replaceable
-    # only if their names are part of the shipped bundled core list.
-    for base in ["gamekit.py", "install.sh", "README.md", "QUICKSTART.md", "VERSION"]:
-        additions.append((src / base, root / base))
-    for parent in ["profiles", "templates", "prompts", "docs", "scripts", "skills", "tests", "extras", "references", "examples"]:
+    # These top-level public documents must be updated as well; previously
+    # CHANGELOG and SECURITY silently stayed at the old release version.
+    for base in ["gamekit.py", "install.sh", "README.md", "QUICKSTART.md",
+                 "VERSION", "CHANGELOG.md", "SECURITY.md", "CONTRIBUTING.md", "LICENSE"]:
+        if (src / base).is_file():
+            additions.append((src / base, root / base))
+    for parent in ["profiles", "templates", "prompts", "docs", "scripts", "skills",
+                   "tests", "extras", "references", "examples"]:
         if not (src / parent).is_dir():
             continue
         for f in (src / parent).rglob("*"):
             if f.is_file():
-                relative = f.relative_to(src)
-                additions.append((f, root / relative))
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    backup = root / ".backups" / timestamp
+                additions.append((f, root / f.relative_to(src)))
+
+    # Preflight ALL targets before modifying ANY managed file. In particular,
+    # do not follow a user-created link in target ancestry or a leftover temp.
+    for s, d in additions:
+        if s.is_symlink() or not s.is_file():
+            fail(f"Refusing nonregular packaged source: {s}")
+        relative = d.relative_to(root)
+        if d.is_symlink() or (d.exists() and not d.is_file()):
+            fail(f"Target path is not an ordinary file: {d}")
+        path = root
+        for component in relative.parts[:-1]:
+            path = path / component
+            if path.is_symlink() or (path.exists() and not path.is_dir()):
+                fail(f"Unsafe linked/non-directory target parent: {path}")
+        tmp = d.with_name(d.name + ".gamekit-tmp")
+        if tmp.exists() or tmp.is_symlink():
+            fail(f"Existing upgrade temporary file: {tmp}")
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    backup = root / ".backups" / stamp
+    if (root / ".backups").is_symlink() or backup.exists() or backup.is_symlink():
+        fail(f"Unsafe or already present backup destination: {backup}")
+    changed = [(s, d) for s, d in additions if not d.exists() or d.read_bytes() != s.read_bytes()]
     print(f"Upgrade {root} from {src} ({len(additions)} packaged files)")
     print(f"Backup overwritten kit files in {backup}")
-    for s, d in additions:
-        if s.is_symlink():
-            fail(f"Refusing packaged symlink: {s}")
-        if d.exists() and not d.is_file():
-            fail(f"Target path is not a regular file: {d}")
-        if args.dry_run:
+    if args.dry_run:
+        for s, d in changed:
             print(f"  WOULD UPDATE {d}")
-            continue
-        if d.exists() and d.read_bytes() == s.read_bytes():
-            kept.append(d)
-            continue
-        d.parent.mkdir(parents=True, exist_ok=True)
+        print(f"Upgrade preview. Unchanged files: {len(additions)-len(changed)}")
+        return
+
+    # Prepare all backups first; a backup write failure cannot partially
+    # upgrade the installation. Restore files if a subsequent write fails.
+    for _, d in changed:
         if d.exists():
             b = backup / d.relative_to(root)
             b.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(d, b)
-        temp = d.with_name(d.name + ".gamekit-tmp")
-        shutil.copy2(s, temp)
-        temp.replace(d)
-    print(f"Upgrade {'preview' if args.dry_run else 'completed'}. Unchanged files: {len(kept)}; custom files not in pack retained.")
-    print("After upgrading, run `link --agents all` to refresh global discovery and `drui` CLI (V1.2 users: `migrate-drui` first).")
+    replaced = []
+    try:
+        for s, d in changed:
+            d.parent.mkdir(parents=True, exist_ok=True)
+            tmp = d.with_name(d.name + ".gamekit-tmp")
+            try:
+                with s.open("rb") as fin, tmp.open("xb") as fout:
+                    shutil.copyfileobj(fin, fout)
+                shutil.copymode(s, tmp)
+                tmp.replace(d)
+                replaced.append(d)
+            finally:
+                if tmp.exists():
+                    tmp.unlink()
+        if (root / "scripts" / DRUI_CLI).exists():
+            ensure_drui_executable(root)
+    except Exception as ex:
+        errors = []
+        for d in reversed(replaced):
+            b = backup / d.relative_to(root)
+            try:
+                if b.exists():
+                    restore = d.with_name(d.name + ".gamekit-restore-tmp")
+                    if restore.exists() or restore.is_symlink():
+                        raise RuntimeError(f"Existing restore temporary file: {restore}")
+                    shutil.copy2(b, restore)
+                    restore.replace(d)
+                else:
+                    d.unlink()
+            except Exception as restore_error:
+                errors.append(f"{d}: {restore_error}")
+        if errors:
+            fail(f"Upgrade failed ({ex}); rollback INCOMPLETE: {'; '.join(errors)}. Backups: {backup}")
+        fail(f"Upgrade failed ({ex}); changed files restored. Backups: {backup}")
+    print(f"Upgrade completed. Unchanged files: {len(additions)-len(changed)}; custom files not in pack retained.")
+    print("After upgrading, run `link --agents all` to refresh global discovery and the CLI.")
 
 
 
