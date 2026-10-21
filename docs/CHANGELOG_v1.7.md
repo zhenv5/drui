@@ -1,3 +1,5 @@
+> ARCHIVED **internal GameAgentKit** milestone; this label is historical, not the current public DRUI version. Use [Install & Verify](INSTALL_AND_VERIFY.md) for today's GitHub-only installation.
+
 # GameAgentKit 1.7.0 — Original Oil UI Plus with method routing
 
 - Added a separate original `skills/oil-ui-plus/SKILL.md` (community-maintained Pro-like UI design guidance, NOT official paid Pro).

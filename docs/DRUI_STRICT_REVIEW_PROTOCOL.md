@@ -1,4 +1,4 @@
-# DRUI v1.4 — strict three-lens independent review protocol
+# DRUI — strict three-lens independent review protocol
 
 ## Independent by process, not by claimed title
 

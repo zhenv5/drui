@@ -1,3 +1,5 @@
+> ARCHIVED **internal GameAgentKit** milestone. These historical V1.x labels are not the current public DRUI Release version. For current GitHub-only installation see [Install & Verify](INSTALL_AND_VERIFY.md).
+
 # V1.3 — DRUI
 
 - Rename only the GameAgentKit UI review Skill from `oil-ui-enhanced-review` to `drui`; never rename external `oil-ui`.

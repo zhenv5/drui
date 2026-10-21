@@ -1,3 +1,5 @@
+> ARCHIVED **internal GameAgentKit** milestone. These historical V1.x labels are not the current public DRUI Release version. For current GitHub-only installation see [Install & Verify](INSTALL_AND_VERIFY.md).
+
 # V1.4 — Strict multi-lens independent review
 
 - DRUI remains a single Skill; added `review-tl`, `review-pm`, `review-user`, `review-triad`, `review-loop` (20 total workflows).

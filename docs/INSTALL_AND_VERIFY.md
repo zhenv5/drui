@@ -4,10 +4,10 @@
 
 ## 1. 命令行首次安装
 
-在官方 Release 页核对最新稳定版本 Tag（`vX.Y.Z`，非 prerelease），下面 `v1.4.2` 是本版示例；未来有新版本应替换。若已存在 `~/GameAgentKit`，不要覆盖。
+在官方 Release 页核对最新稳定版本 Tag（`vX.Y.Z`，非 prerelease），下面 `v1.4.3` 是本版示例；未来有新版本应替换。若已存在 `~/GameAgentKit`，不要覆盖。
 
 ```bash
-git clone --depth 1 --branch v1.4.2 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.3 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 git -C "$HOME/GameAgentKit" remote get-url origin
 cat "$HOME/GameAgentKit/VERSION"
 # 阅读 install.sh / gamekit.py 并检查将创建哪些链接
@@ -42,7 +42,7 @@ drui verify --project /path/to/game             # 额外检查项目 Skill 遮�
 成功时的**示例**（不是用户机器的实测结果）：
 
 ```text
-DRUI v1.4.2 PASS | 4 agents | 60/60 Skill links | 0 errors, 0 warnings | runtime untested
+DRUI v1.4.3 PASS | 4 agents | 60/60 Skill links | 0 errors, 0 warnings | runtime untested
 ```
 
 四个 Agent 共 **5 个 Skill 目录**：Codex 1、Claude Code 1、Antigravity 2、Cursor 1；各有 12 个内置 Skills，故 60/60。旧别名 **`--agents all` 只包含 Codex、Claude、Antigravity，不包含 Cursor**，建议明确传入四个 Agent。
@@ -80,7 +80,7 @@ python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,c
 "$HOME/GameAgentKit/scripts/drui" verify           # 以退出码验收
 ```
 
-更新器只接受官方 Git origin 和最新正式 Release Tag，拒绝脏工作区，不下载 ZIP、不给第三方 Skill 自动升级。Git checkout 不是断电原子操作；若中断应检查工作树，不要擅自 `reset --hard`。
+更新器只接受官方 Git origin 和最新正式 Release Tag，拒绝脏工作区。Tag 由仓库维护者控制、技术上可以被移动，因此升级前应核对 Release 历史与提交差异，不下载 ZIP、不给第三方 Skill 自动升级。Git checkout 不是断电原子操作；若中断应检查工作树，不要擅自 `reset --hard`。
 
 ## 5. 故障排查
 

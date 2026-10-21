@@ -1,4 +1,4 @@
-> V1.5: 在 Agent 中输入 `drui list` 即显示所有 20 个 workflow；Mac 终端使用 `drui list`、`drui help <stage>`、`drui prompt <stage>`。详见 [快捷命令手册](DRUI_COMMANDS_ZH.md)。终端不会自行运行 Agent。
+当前公开版本请看仓库 `VERSION` 和 [Release](https://github.com/zhenv5/drui/releases/latest)。在 Agent 对话中可请求 `drui list`；终端 `drui list`/`help`/`prompt` 只输出文本，不自动执行 Agent。详见 [命令手册](DRUI_COMMANDS_ZH.md) 和 [安装验证](INSTALL_AND_VERIFY.md)。
 
 # DRUI — user manual / 使用说明
 
@@ -54,10 +54,10 @@ python3 ~/GameAgentKit/gamekit.py workflow prompt --stage component-polish --pro
 python3 ~/GameAgentKit/gamekit.py workflow prompt --stage full --output ~/Downloads/full-review.md
 ```
 
-CLI 负责输出文本**不会替你调用其他 Agent、运行 Xcode、执行测试、推送到 GitHub**。选阶段后将文本粘贴到 Codex / Claude Code / Antigravity 即可。这解决了不同平台 Skill 调用格式不一致的问题。
+CLI 负责输出文本**不会替你调用其他 Agent、运行 Xcode、执行测试、推送到 GitHub**。选阶段后将文本粘贴到 Codex / Claude Code / Antigravity / Cursor 等有相应项目访问权限的 Agent。这解决了不同平台 Skill 调用格式不一致的问题。
 
 
-## V1.7：Oil UI Plus 与调用顺序
+## Oil UI Plus 与调用顺序
 
 UI 方法统一优先级（不代表顺序执行四次）：**`oil-ui-pro`（官方、实际已安装） > `oil-ui-plus`（GameAgentKit 原创内置） > `oil-ui`（已安装开源版） > DRUI 其他内置通用流程**。DRUI 永远负责 workflow 编排、三方独立审查及验收。详见 [UI_SOURCE_ROUTING.md](UI_SOURCE_ROUTING.md)。
 
@@ -97,7 +97,7 @@ drui sources --agent claude
 统一操作规范见 **[INSTALL_AND_VERIFY.md](INSTALL_AND_VERIFY.md)**：涵盖命令行直接安装、Agent 一键复制 Prompt、GitHub Tag 更新、短摘要、退出码和排错。
 
 ```bash
-git clone --depth 1 --branch v1.4.2 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.3 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
 "$HOME/GameAgentKit/scripts/drui" verify          # 一行摘要；必须检查退出码
@@ -107,7 +107,7 @@ bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
 
 DRUI 保留已有同名用户 Skills，因此安装命令本身即使返回 0，也可能有未安装链接。**必须以最后的 verify 返回码验收**；默认四个 Agent 跨五个目录共 60 个 Skill 链接，旧别名 `--agents all` 不含 Cursor。验证本地链接并不代表 Agent 已实际加载。
 
-## V1.4 — 严苛三方独立评审
+## 严苛三方独立评审
 
 直接调用：`Use drui, stage review-tl / review-pm / review-user / review-triad / review-loop`。
 

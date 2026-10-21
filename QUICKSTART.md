@@ -7,7 +7,7 @@ DRUI is a set of 12 bundled Skills and 20 independent workflows for game UI/UX d
 Visit https://github.com/zhenv5/drui/releases/latest and choose the newest stable tag `vX.Y.Z`. Run:
 
 ```bash
-git clone --depth 1 --branch v1.4.2 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.3 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 DRUI_LOG=$(mktemp)
 if bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor >"$DRUI_LOG" 2>&1; then
@@ -19,14 +19,15 @@ else
 fi
 ```
 
-Replace `v1.4.2` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions.
+Replace `v1.4.3` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions.
 
 ## Update directly from GitHub (no archive)
 
 ```bash
-drui update --repo zhenv5/drui --check
-drui update --repo zhenv5/drui --yes
-drui version
+"$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --check
+# Review the changes first, and check that the worktree is clean.
+"$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --yes
+"$HOME/GameAgentKit/scripts/drui" version
 "$HOME/GameAgentKit/scripts/drui" verify # mandatory one-line result
 ```
 
@@ -35,7 +36,7 @@ drui version
 ## First task
 
 ```bash
-drui verify  # read-only: status and bundle version of each Skill across all four Agents
+drui verify  # one-line filesystem verification, not an Agent runtime test
 drui start
 drui list --beginner
 drui help usability-review

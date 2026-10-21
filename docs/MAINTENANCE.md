@@ -17,3 +17,15 @@ Only a successful final `verify` (not merely `install.sh` or `link`) proves that
 `--check` is read-only, and update requires an official origin and clean Git checkout. Checkout is not crash-atomic; inspect status after an interruption, do not forcibly reset user modifications.
 
 DRUI never upgrades third-party Skills. `deps check` requires an opt-in approved fingerprint baseline; the absence of this baseline is not an install failure. Run `deps list` and independently review before optionally using `deps lock`. Successful local verification does not prove real Agent discovery/loading.
+
+## Maintainer release checklist (source-only)
+
+1. Open a PR and update root `VERSION`, `gamekit.py`'s version constant, `tests/test_public_release.py` and `.github/workflows/publish.yml`'s exact version assertion. Update `CHANGELOG.md`. Keep the public release number separate from archived **GameAgentKit internal historical** version labels.
+2. Audit current-version clone examples in `README.md`, `QUICKSTART.md`, `docs/INSTALL_AND_VERIFY.md`, `docs/DRUI_USAGE.md` and `docs/DRUI_REVIEW_CHEATSHEET_ZH.md`. Do not rewrite frozen legacy changelog history.
+3. Ensure `prompts/agent-setup/install.txt` and `update.txt` match the mirrored README blocks exactly; maintain CLI `drui agent`/`drui copy` contract. The install/update prompts must check `drui verify` return codes and keep output compact.
+4. Run `python3 -m unittest discover -s tests -v` and `bash tests/smoke_git_install.sh`. GitHub CI must pass on the PR before merging.
+5. Merge to `main` after approval. `.github/workflows/publish.yml` automatically creates the annotated Tag `v$(cat VERSION)` and **source-only GitHub Release**. Do **not** manually push a parallel tag or rerun a historical ZIP-publishing workflow.
+6. Check both CI and publishing workflow results; confirm the new Tag points to the merged commit, Release is non-draft/non-prerelease, and **no installer ZIP** was attached. Never move a published tag.
+7. Verify the canonical GitHub clone/dry-run/install/`drui verify` flow in CI. Genuine Agent discovery and execution still require separate local Codex/Claude/Antigravity/Cursor testing; filesystem verification alone must not be described as Agent-loaded.
+
+**Trust notes:** A Git Tag is not intrinsically immutable or signed; protect repository administration and release permissions. An interrupted checkout is not an atomic upgrade.

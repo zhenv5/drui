@@ -1,4 +1,4 @@
-# DRUI V1.4：严苛 TL / PM / 用户独立评审速查
+# DRUI 严苛 TL / PM / 用户独立评审速查（当前通用流程）
 
 **只有一个 Skill：`drui`**。旧有 15 个工作流保留，新增 5 个严苛评审工作流，合计 20 个。你的开源 `oil-ui` 是可选原始 Skill；如已安装，DRUI 会要求 Agent 参考它，但不解锁 Oil UI Pro。
 
@@ -56,11 +56,15 @@ python3 ~/GameAgentKit/gamekit.py review evaluate \
 
 **注意**：评分工具验证报告字段、证据文件是否存在及阻塞问题状态，不具备判定截图真实性、Agent 实际是否使用隔离会话或真实人类用户参与的能力。它通过并非真正的产品上线认证。
 
-## GitHub 源码安装
+## GitHub 源码安装与验证
+
+始终参考 [统一安装与验证手册](INSTALL_AND_VERIFY.md) 以及 [最新稳定 Release](https://github.com/zhenv5/drui/releases/latest)，不要复用旧版本号或 ZIP 安装说明。首次安装从已核对的稳定 Tag 克隆（当前文档示例：`v1.4.3`）：
 
 ```bash
-git clone --branch v1.3.0 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
-bash "$HOME/GameAgentKit/install.sh" --agents all
+git clone --depth 1 --branch v1.4.3 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
+bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
+"$HOME/GameAgentKit/scripts/drui" verify   # 必须为退出码 0
 ```
 
-首次安装用 `git clone --branch v1.3.0 https://github.com/zhenv5/drui.git ~/GameAgentKit`，再执行 `bash ~/GameAgentKit/install.sh --agents all`。此包本身不会打开 Xcode、运行审查或修改已有 Oil UI。
+完整四 Agent 共 5 个目录、预期 60 个内置 Skill 链接；`--agents all` 旧别名不包括 Cursor。安装器会保留同名用户 Skill，即使安装命令返回成功，**仍必须以 verify 退出码为准**。默认只输出一行结果；用 `--verbose` 查看完整名称、版本和冲突。验证通过仅代表本地文件正确，不能代替在真实 Agent 内完成实际加载测试。

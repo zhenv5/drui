@@ -14,6 +14,8 @@ To install third-party skills globally via the separate skills.sh CLI, **review 
 npx skills add gamedev-skills/awesome-gamedev-agent-skills \
   --skill game-ui-ux --skill game-feel -g -a codex -a claude-code -a antigravity
 ```
-This uses that CLI's own global installation paths, not this pack's canonical root. Keep independent third-party Skills **outside** `~/GameAgentKit/skills/` (reserved for bundled, release-managed Skills). Once you have checked ownership, permissions, license and compatibility, use `register-external --name <skill-name> --source /your/owned/skill/directory --agents all`. This links only into vacant slots and never copies or upgrades user-owned Skills. See `docs/EXTERNAL_SKILL_UPDATES.md`. Do not copy files you lack rights to redistribute.
+This uses that CLI's own global installation paths, not this pack's canonical root. Keep independent third-party Skills **outside** `~/GameAgentKit/skills/` (reserved for bundled, release-managed Skills). Once you have checked ownership, permissions, license and compatibility, use `register-external --name <skill-name> --source /your/owned/skill/directory --agents codex,claude,antigravity,cursor`. This links only into vacant slots and never copies or upgrades user-owned Skills. See `docs/EXTERNAL_SKILL_UPDATES.md`. Do not copy files you lack rights to redistribute.
 
 Optional tool servers like Comfy MCP, Loopcut, or Blender integrations are **not skills**. Configure them separately for each agent; connecting a skill doesn't provide a remote model, account, token or GPU.
+
+This documentation covers optional independently owned tools, **not** DRUI's official install path. For DRUI itself use the GitHub-source [Install & Verify guide](INSTALL_AND_VERIFY.md). Its built-in 12 Skills are bundled; external skills.sh or npm commands are optional and must be reviewed separately.
