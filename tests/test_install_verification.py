@@ -36,17 +36,37 @@ class InstallVerificationTests(unittest.TestCase):
 
     def test_install_prints_auto_verification_and_explicit_skill_names(self):
         output = self.install('codex', 'claude').stdout
-        self.assertIn('DRUI Skill verification', output)
-        self.assertIn('[codex] 12/12 installed slots', output)
-        self.assertIn('[claude] 12/12 installed slots', output)
-        self.assertIn('oil-ui-plus', output)
-        self.assertIn('Agent actual loading/execution: NOT TESTED', output)
+        self.assertIn('DRUI v', output)
+        self.assertIn('PASS | 2 agents | 24/24 Skill links', output)
+        self.assertIn('runtime untested', output)
+        self.assertNotIn('[codex] 12/12 installed slots', output)
         data = json.loads(self.run_drui('verify', '--agents', 'codex,claude', '--json').stdout)
         self.assertEqual(data['summary'], {'installed': 24, 'expected': 24, 'complete': True})
         self.assertEqual(data['version'], (SOURCE / 'VERSION').read_text().strip())
         self.assertEqual(len(data['agents']), 2)
         self.assertTrue(all(x['status'] == 'OK' for a in data['agents'] for x in a['skills']))
         self.assertTrue(all(x['version_source'].startswith('GameAgentKit bundle') for a in data['agents'] for x in a['skills']))
+
+    def test_compact_cli_is_one_line_and_preserves_verbose_and_json(self):
+        self.install('codex')
+        clean = self.run_drui('verify', '--agents', 'codex').stdout.strip().splitlines()
+        self.assertEqual(len(clean), 1, clean)
+        self.assertIn('PASS | 1 agents | 12/12 Skill links', clean[0])
+        self.assertIn('runtime untested', clean[0])
+        verbose = self.run_drui('verify', '--agents', 'codex', '--verbose').stdout
+        self.assertIn('[codex] 12/12 installed slots', verbose)
+        self.assertIn('oil-ui-plus', verbose)
+        assert self.run_drui('verify', '--agents', 'codex', '--json').stdout.startswith('{')
+
+        # Missing links trigger nonzero exit and at most three failure entries.
+        broken = self.home / '.agents' / 'skills' / 'game-audio'
+        broken.unlink()
+        bad = self.run_drui('verify', '--agents', 'codex', expected=1)
+        self.assertIn('FAIL', bad.stdout)
+        self.assertIn('game-audio:MISSING', bad.stdout)
+        self.assertLessEqual(len(bad.stdout.strip().splitlines()), 2)
+        self.assertFalse(broken.exists())
+
 
     def test_missing_and_broken_links_fail_and_do_not_repair(self):
         self.install('codex')
