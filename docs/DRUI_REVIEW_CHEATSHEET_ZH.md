@@ -58,13 +58,13 @@ python3 ~/GameAgentKit/gamekit.py review evaluate \
 
 ## GitHub 源码安装与验证
 
-始终参考 [统一安装与验证手册](INSTALL_AND_VERIFY.md) 以及 [最新稳定 Release](https://github.com/zhenv5/drui/releases/latest)，不要复用旧版本号或 ZIP 安装说明。首次安装从已核对的稳定 Tag 克隆（当前文档示例：`v1.4.3`）：
+始终参考 [统一安装与验证手册](INSTALL_AND_VERIFY.md) 以及 [最新稳定 Release](https://github.com/zhenv5/drui/releases/latest)，不要复用旧版本号或 ZIP 安装说明。首次安装从已核对的稳定 Tag 克隆（当前文档示例：`v1.4.4`）：
 
 ```bash
-git clone --depth 1 --branch v1.4.3 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.4 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
 "$HOME/GameAgentKit/scripts/drui" verify   # 必须为退出码 0
 ```
 
-完整四 Agent 共 5 个目录、预期 60 个内置 Skill 链接；`--agents all` 旧别名不包括 Cursor。安装器会保留同名用户 Skill，即使安装命令返回成功，**仍必须以 verify 退出码为准**。默认只输出一行结果；用 `--verbose` 查看完整名称、版本和冲突。验证通过仅代表本地文件正确，不能代替在真实 Agent 内完成实际加载测试。
+完整四 Agent 共 5 个目录、预期 60 个内置 Skill 链接；`--agents all` 已统一包含 Cursor。安装器会保留同名用户 Skill，并在最终验证失败时返回非零码；**仍必须检查 verify 退出码**。默认只输出一行结果；用 `--verbose` 查看完整名称、版本和冲突。验证通过仅代表本地文件正确，不能代替在真实 Agent 内完成实际加载测试。

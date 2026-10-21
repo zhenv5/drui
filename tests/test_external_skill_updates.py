@@ -130,7 +130,9 @@ class ExternalSkillUpdateTests(unittest.TestCase):
         dest.unlink()  # remove ONLY kit-owned test symlink
         dest.mkdir()
         (dest/'SKILL.md').write_text('---\nname: game-feel-polish\ndescription: mine\n---\nuser-version-1')
-        self.call('link', '--root', self.kit, '--agents', 'codex')
+        linked = self.call('link', '--root', self.kit, '--agents', 'codex', ok=False)
+        self.assertNotEqual(linked.returncode, 0)
+        self.assertIn('FAIL', linked.stdout)
         self.assertFalse(dest.is_symlink())
         self.assertIn('user-version-1', (dest/'SKILL.md').read_text())
         conflicts = self.deps('conflicts', '--agent', 'codex').stdout

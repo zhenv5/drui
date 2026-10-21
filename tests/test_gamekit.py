@@ -39,7 +39,8 @@ class GameAgentKitTests(unittest.TestCase):
 
     def test_install_links_one_canonical_root(self):
         self.install()
-        sources = [self.home / ".agents/skills/game-qa-review",
+        sources = [self.home / ".cursor/skills/game-qa-review",
+                   self.home / ".agents/skills/game-qa-review",
                    self.home / ".claude/skills/game-qa-review",
                    self.home / ".gemini/config/skills/game-qa-review",
                    self.home / ".gemini/antigravity-cli/skills/game-qa-review"]
@@ -79,7 +80,9 @@ class GameAgentKitTests(unittest.TestCase):
         existing = self.home / ".claude/skills/game-qa-review"
         existing.mkdir(parents=True)
         (existing / "SKILL.md").write_text("# Custom skill")
-        self.install("claude")
+        result = self.call(SOURCE / "gamekit.py", "install", "--root", self.root, "--agents", "claude", ok=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("FAIL", result.stdout)
         self.assertEqual((existing / "SKILL.md").read_text(), "# Custom skill")
 
     def test_unlink_only_kit_owned_symlinks(self):
@@ -548,10 +551,14 @@ class GameAgentKitTests(unittest.TestCase):
         existing = self.home / '.local/bin/drui'
         existing.parent.mkdir(parents=True)
         existing.write_text('my existing command\n')
-        output = self.install().stdout
+        result = self.call(SOURCE / 'gamekit.py', 'install', '--root', self.root, '--agents', 'all', ok=False)
+        self.assertNotEqual(result.returncode, 0)
+        output = result.stdout
         self.assertIn('Existing drui command preserved', output)
+        self.assertIn('FAIL', output)
         self.assertEqual(existing.read_text(), 'my existing command\n')
-        self.call(self.root / 'gamekit.py', 'link', '--root', self.root, '--agents', 'all')
+        attempted = self.call(self.root / 'gamekit.py', 'link', '--root', self.root, '--agents', 'all', ok=False)
+        self.assertNotEqual(attempted.returncode, 0)
         self.assertEqual(existing.read_text(), 'my existing command\n')
         self.call(self.root / 'gamekit.py', 'unlink', '--root', self.root, '--agents', 'all')
         self.assertTrue(existing.is_file())

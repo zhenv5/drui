@@ -56,4 +56,4 @@ drui deps check --agent codex
 
 No content checksum can ensure an upgraded third-party Skill is benign or compatible; passing the fingerprint check only indicates matching previously reviewed files.
 
-For installation success use `drui verify` (filesystem links, concise by default). This is a separate check from optional external Skill fingerprint approval. For full four-Agent coverage use `--agent codex,claude,antigravity,cursor`, because the legacy `all` alias omits Cursor. See [Install & Verify](INSTALL_AND_VERIFY.md).
+For installation success use `drui verify` (filesystem links, concise by default). This is a separate check from optional external Skill fingerprint approval. For full four-Agent coverage use `--agent codex,claude,antigravity,cursor`, because `all` now includes Cursor. See [Install & Verify](INSTALL_AND_VERIFY.md).

@@ -26,12 +26,12 @@ class InstallVerificationTests(unittest.TestCase):
         self.assertEqual(proc.returncode, expected, proc.stderr + '\n' + proc.stdout)
         return proc
 
-    def install(self, *agents):
+    def install(self, *agents, expected=0):
         agent_names = ','.join(agents) if agents else 'codex,claude,antigravity,cursor'
         proc = subprocess.run([sys.executable, str(SOURCE / 'gamekit.py'), 'install',
                                '--root', str(self.root), '--agents', agent_names],
                               env=self.env, text=True, capture_output=True, timeout=45)
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, expected, proc.stdout + proc.stderr)
         return proc
 
     def test_install_prints_auto_verification_and_explicit_skill_names(self):
@@ -46,6 +46,13 @@ class InstallVerificationTests(unittest.TestCase):
         self.assertEqual(len(data['agents']), 2)
         self.assertTrue(all(x['status'] == 'OK' for a in data['agents'] for x in a['skills']))
         self.assertTrue(all(x['version_source'].startswith('GameAgentKit bundle') for a in data['agents'] for x in a['skills']))
+
+    def test_all_alias_installs_and_verifies_the_same_four_agents(self):
+        installation = self.install('all')
+        self.assertIn('PASS | 4 agents | 60/60 Skill links', installation.stdout)
+        result = self.run_drui('verify')
+        self.assertIn('PASS | 4 agents | 60/60 Skill links', result.stdout)
+        self.assertEqual(len(result.stdout.strip().splitlines()), 1)
 
     def test_compact_cli_is_one_line_and_preserves_verbose_and_json(self):
         self.install('codex')
@@ -88,7 +95,8 @@ class InstallVerificationTests(unittest.TestCase):
         target = self.home / '.claude' / 'skills' / 'oil-ui-plus'
         target.mkdir(parents=True)
         (target / 'SKILL.md').write_text('custom user version')
-        self.install('claude')
+        install_result = self.install('claude', expected=1)
+        self.assertIn('FAIL', install_result.stdout)
         report = json.loads(self.run_drui('verify', '--agents', 'claude', '--json', expected=1).stdout)
         row = next(x for x in report['agents'][0]['skills'] if x['name'] == 'oil-ui-plus')
         self.assertEqual(row['status'], 'COLLISION')
@@ -133,7 +141,8 @@ class InstallVerificationTests(unittest.TestCase):
         cli = self.home / '.local' / 'bin' / 'drui'
         cli.parent.mkdir(parents=True)
         cli.write_text('existing command')
-        self.install('codex')
+        install_result = self.install('codex', expected=1)
+        self.assertIn('FAIL', install_result.stdout)
         report = json.loads(self.run_drui('verify', '--agents', 'codex', '--json', expected=1).stdout)
         self.assertEqual(report['cli']['status'], 'COLLISION')
         self.assertEqual(report['summary']['installed'], 12)

@@ -28,6 +28,14 @@ class DocsConsistencyTests(unittest.TestCase):
         publisher = (ROOT / ".github/workflows/publish.yml").read_text()
         self.assertIn(f'test "$(cat VERSION)" = "{version}"', publisher)
 
+    def test_install_and_verify_agent_scopes_are_consistent(self):
+        src = (ROOT / "gamekit.py").read_text()
+        self.assertIn('"all": "codex,claude,antigravity,cursor"', src)
+        for filename in ACTIVE:
+            text = (ROOT / filename).read_text()
+            self.assertNotIn("旧别名 `--agents all` 不含 Cursor", text)
+            self.assertNotIn("legacy `--agents all`", text)
+
     def test_internal_changelogs_are_marked_archived(self):
         history = sorted((ROOT / "docs").glob("CHANGELOG_v*.md"))
         self.assertGreaterEqual(len(history), 6)
