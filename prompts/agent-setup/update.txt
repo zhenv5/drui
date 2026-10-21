@@ -2,5 +2,5 @@
 1. 确认 ~/GameAgentKit 是 Git checkout，origin 指向官方仓库，无未提交的源码改动/未追踪文件；先运行 drui version、drui deps check、drui deps conflicts，记录旧版本和独立安装的用户 Skills。不允许覆盖用户数据，也不允许自动更新、lock 或 approve 第三方 Skills。
 2. 运行 "$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --check；查看 GitHub 正式 Release 变更和 Tag。若无新版本则停止；如果当前仓库有改动，停止并报告，不要 git reset --hard、clean 或 force checkout。
 3. 确认无冲突后执行 "$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --yes。DRUI 使用 Git 获取官方 Tag、验证源码 VERSION，再切换 checkout；不会下载/解压 ZIP。异常中断时保留现场供人工修复，不保证断电事务原子性。
-4. 更新完成后运行 python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,cursor（只链接空位）、doctor、drui version、list --beginner、deps check、deps conflicts；报告新旧 Tag/Commit、真实测试结果、可能冲突及未验证的 Agent。
+4. 更新完成后运行 python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,cursor（只链接空位）、doctor、drui verify --agents codex,claude,antigravity,cursor、drui version、list --beginner、deps check、deps conflicts；报告新旧 Tag/Commit、真实测试结果、可能冲突及未验证的 Agent。
 整个流程严格禁止 curl|bash、静默依赖升级以及对已有第三方 Skill 路径的写入。

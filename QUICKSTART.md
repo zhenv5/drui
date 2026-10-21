@@ -7,14 +7,15 @@ DRUI is a set of 12 bundled Skills and 20 independent workflows for game UI/UX d
 Visit https://github.com/zhenv5/drui/releases/latest and choose the newest stable tag `vX.Y.Z`. Run:
 
 ```bash
-git clone --depth 1 --branch v1.3.0 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.0 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
+python3 "$HOME/GameAgentKit/gamekit.py" verify --agents codex,claude,antigravity,cursor
 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor
 "$HOME/GameAgentKit/scripts/drui" start
 ```
 
-Replace `v1.3.0` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions.
+Replace `v1.4.0` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions.
 
 ## Update directly from GitHub (no archive)
 
@@ -22,6 +23,7 @@ Replace `v1.3.0` with the latest **verified stable release Tag** when a newer ve
 drui update --repo zhenv5/drui --check
 drui update --repo zhenv5/drui --yes
 drui version
+python3 "$HOME/GameAgentKit/gamekit.py" verify --agents codex,claude,antigravity,cursor
 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor
 ```
 
@@ -30,6 +32,7 @@ python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity
 ## First task
 
 ```bash
+drui verify  # read-only: status and bundle version of each Skill across all four Agents
 drui start
 drui list --beginner
 drui help usability-review
@@ -48,3 +51,15 @@ drui deps check
 ```
 
 The lock file is local (`~/GameAgentKit/.state/`, excluded from Git). No third-party Skill is installed, overwritten or upgraded by DRUI. Verify the actual Agent loading outcome independently.
+
+## Verify installed Skills after setup
+
+Installation prints a per-Agent summary automatically. Re-run the read-only verifier at any time:
+
+```bash
+drui verify
+drui verify --agents codex,cursor
+drui verify --json
+```
+
+The default verifier checks all **four** Agents; `--agents all` follows the older CLI alias (Codex/Claude/Antigravity, excluding Cursor). Each bundled Skill reports the **GameAgentKit release version**, not an independently published Skill version. Third-party Skills are user-owned, and their version is `unknown` unless declared in their own `SKILL.md` metadata. `OK` means the symlink targets the expected local bundled Skill and its frontmatter is valid. `MISSING`, `BROKEN`, `COLLISION` or `INVALID` require attention; verification returns a nonzero status when the selected installation is incomplete. A project-local Skill may shadow a global one (use `--project /path/to/game` for warnings). **This is a filesystem audit, not proof that a real Agent loaded or executed the Skill.**

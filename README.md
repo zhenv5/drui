@@ -15,7 +15,7 @@ Copy the entire following prompt into Codex, Claude Code, Antigravity or Cursor 
 1. 检查 git、Python 3、本机已有 DRUI 路径、Codex/Claude Code/Antigravity/Cursor 的 Skill 名称冲突；不要移动或覆盖用户自己的 Skills。检查最新 GitHub 正式 Release 的版本 Tag（必须 vX.Y.Z，非预发布），确认发布者及仓库。
 2. 若 ~/GameAgentKit 已存在，停止首次安装并报告，不要覆盖。运行 git clone --depth 1 --branch <确认的稳定Tag> https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"（替换 <确认的稳定Tag> 为真实版本）。必须确保远端 origin 是官方仓库、仓库 VERSION 与 Tag 一致，再审查 install.sh 和 gamekit.py。
 3. 在源码根目录执行 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run；确认仅创建安全的 Skill/CLI 链接后，再执行不带 --dry-run 的命令。占用的同名 Skill 保留，不要强行替换。不要执行第三方 Skill 安装器。
-4. 使用 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor、"$HOME/GameAgentKit/scripts/drui" version、list --beginner、deps conflicts；说明 ~/.local/bin 是否在 PATH。报告已安装 Tag/Commit、权限/冲突、实际检测结果与未验证 Agent。不能声称已经在某 Agent 内加载成功，除非真正打开该 Agent 验证。
+4. 使用 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor、"$HOME/GameAgentKit/scripts/drui" verify --agents codex,claude,antigravity,cursor、"$HOME/GameAgentKit/scripts/drui" version、list --beginner、deps conflicts；说明 ~/.local/bin 是否在 PATH。报告已安装 Tag/Commit、权限/冲突、实际检测结果与未验证 Agent。不能声称已经在某 Agent 内加载成功，除非真正打开该 Agent 验证。
 所有更新和安装必须来自 GitHub 源码 Tag；不使用 Release ZIP、curl|bash、git pull 覆盖、force checkout。DRUI 永不自动升级或批准第三方 Skills。
 ```
 
@@ -28,7 +28,7 @@ Copy this prompt to the coding agent to update an existing GitHub checkout safel
 1. 确认 ~/GameAgentKit 是 Git checkout，origin 指向官方仓库，无未提交的源码改动/未追踪文件；先运行 drui version、drui deps check、drui deps conflicts，记录旧版本和独立安装的用户 Skills。不允许覆盖用户数据，也不允许自动更新、lock 或 approve 第三方 Skills。
 2. 运行 "$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --check；查看 GitHub 正式 Release 变更和 Tag。若无新版本则停止；如果当前仓库有改动，停止并报告，不要 git reset --hard、clean 或 force checkout。
 3. 确认无冲突后执行 "$HOME/GameAgentKit/scripts/drui" update --repo zhenv5/drui --yes。DRUI 使用 Git 获取官方 Tag、验证源码 VERSION，再切换 checkout；不会下载/解压 ZIP。异常中断时保留现场供人工修复，不保证断电事务原子性。
-4. 更新完成后运行 python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,cursor（只链接空位）、doctor、drui version、list --beginner、deps check、deps conflicts；报告新旧 Tag/Commit、真实测试结果、可能冲突及未验证的 Agent。
+4. 更新完成后运行 python3 "$HOME/GameAgentKit/gamekit.py" link --agents codex,claude,antigravity,cursor（只链接空位）、doctor、drui verify --agents codex,claude,antigravity,cursor、drui version、list --beginner、deps check、deps conflicts；报告新旧 Tag/Commit、真实测试结果、可能冲突及未验证的 Agent。
 整个流程严格禁止 curl|bash、静默依赖升级以及对已有第三方 Skill 路径的写入。
 ```
 
@@ -37,9 +37,10 @@ Copy this prompt to the coding agent to update an existing GitHub checkout safel
 Prerequisites: Git, Python 3, macOS or Linux, permission to create local Skill links. First check the [latest official stable release](https://github.com/zhenv5/drui/releases/latest) and substitute the matching Tag in the clone command.
 
 ```bash
-git clone --branch v1.3.0 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --branch v1.4.0 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
+python3 "$HOME/GameAgentKit/gamekit.py" verify --agents codex,claude,antigravity,cursor
 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor
 ```
 
@@ -58,6 +59,8 @@ The updater checks GitHub's latest stable Release to find an immutable version T
 ## Start using DRUI
 
 ```bash
+drui verify                        # list installed Skills, bundle versions, paths and conflicts
+drui verify --json                 # machine-readable verification report
 drui start                         # first minute overview
 drui list --beginner               # curated starter workflows
 drui list                          # all 20 stages

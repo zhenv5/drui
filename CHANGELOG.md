@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.0 — Per-Agent Skill installation verification
+
+- Add read-only `drui verify` and `gamekit.py verify` with per-Agent Skill name/status/path, bundled kit version and `--json` output.
+- Detect missing, broken, invalid and colliding global Skill links without modifying user-owned installations.
+- Include user-owned/third-party Skill inventory and declared version when available; do not fabricate independent bundled Skill versions.
+- Print verification automatically after an installation or relink, while keeping dry-run strictly non-mutating.
+- Clarify that a valid local link does not prove Agent runtime loading; add regression and Git-clone smoke coverage.
+
 ## v1.3.0 — GitHub source-only installation and updates
 
 - Replaced release ZIP installer with `git clone` of the official stable GitHub Tag directly into `~/GameAgentKit`.

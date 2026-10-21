@@ -2,5 +2,5 @@
 1. 检查 git、Python 3、本机已有 DRUI 路径、Codex/Claude Code/Antigravity/Cursor 的 Skill 名称冲突；不要移动或覆盖用户自己的 Skills。检查最新 GitHub 正式 Release 的版本 Tag（必须 vX.Y.Z，非预发布），确认发布者及仓库。
 2. 若 ~/GameAgentKit 已存在，停止首次安装并报告，不要覆盖。运行 git clone --depth 1 --branch <确认的稳定Tag> https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"（替换 <确认的稳定Tag> 为真实版本）。必须确保远端 origin 是官方仓库、仓库 VERSION 与 Tag 一致，再审查 install.sh 和 gamekit.py。
 3. 在源码根目录执行 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run；确认仅创建安全的 Skill/CLI 链接后，再执行不带 --dry-run 的命令。占用的同名 Skill 保留，不要强行替换。不要执行第三方 Skill 安装器。
-4. 使用 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor、"$HOME/GameAgentKit/scripts/drui" version、list --beginner、deps conflicts；说明 ~/.local/bin 是否在 PATH。报告已安装 Tag/Commit、权限/冲突、实际检测结果与未验证 Agent。不能声称已经在某 Agent 内加载成功，除非真正打开该 Agent 验证。
+4. 使用 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor、"$HOME/GameAgentKit/scripts/drui" verify --agents codex,claude,antigravity,cursor、"$HOME/GameAgentKit/scripts/drui" version、list --beginner、deps conflicts；说明 ~/.local/bin 是否在 PATH。报告已安装 Tag/Commit、权限/冲突、实际检测结果与未验证 Agent。不能声称已经在某 Agent 内加载成功，除非真正打开该 Agent 验证。
 所有更新和安装必须来自 GitHub 源码 Tag；不使用 Release ZIP、curl|bash、git pull 覆盖、force checkout。DRUI 永不自动升级或批准第三方 Skills。

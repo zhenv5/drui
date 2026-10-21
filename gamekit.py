@@ -13,7 +13,7 @@ from pathlib import Path
 
 from scripts import dependency_guard as depguard
 
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 HERE = Path(__file__).resolve().parent
 AGENT_PATHS = {
     "codex": [".agents/skills"],
@@ -201,7 +201,7 @@ DRUI_CLI = "drui"
 
 
 def ensure_drui_executable(root: Path, *, dry_run=False):
-    """Ensure the GitHub-cloned DRUI CLI has executable permissions.
+    """A GitHub Release ZIP extracted by Python may lose UNIX executable bits.
 
     Only change the toolkit-owned command under its canonical root; this never
     chmods a user-installed `drui` file or foreign Agent Skill.
@@ -249,6 +249,25 @@ def unlink_drui_cli(root: Path, *, dry_run=False, home=None):
     return False
 
 
+def installation_report(root, agents, *, home=None, project=None, json_format=False):
+    """Read-only audit of exact bundled Skill symlinks for selected agents."""
+    from scripts.verify_install import inspect, render
+    report = inspect(root, home or Path.home(), agents, AGENT_PATHS, project=project)
+    if json_format:
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+    else:
+        render(report)
+    return report
+
+
+def cmd_verify(args):
+    root = Path(args.root).expanduser().resolve()
+    report = installation_report(root, args_agents(args.agents), project=args.project,
+                                 json_format=args.json)
+    if not report['summary']['complete']:
+        fail('Installation verification incomplete; inspect missing/conflicting Skill paths (no changes made)')
+
+
 def cmd_install(args):
     src = HERE
     root = Path(args.root).expanduser().resolve()
@@ -264,6 +283,8 @@ def cmd_install(args):
         from scripts.github_update import configured_repo
         if configured_repo(root):
             print("Update source verified: GitHub official origin (zhenv5/drui)")
+    if not args.dry_run:
+        installation_report(root, args_agents(args.agents))
     print("\nShared root:", root)
     print("New projects already see the GLOBAL skills. Optionally add per-project context:")
     print(f"  python3 {root}/gamekit.py attach --project /path/to/game --profile ios-swiftui --name 'My Game'")
@@ -273,6 +294,8 @@ def cmd_link(args):
     root = Path(args.root).expanduser().resolve()
     provision(root, args_agents(args.agents), dry_run=args.dry_run, copy=args.copy)
     link_drui_cli(root, dry_run=args.dry_run)
+    if not args.dry_run:
+        installation_report(root, args_agents(args.agents))
 
 
 def cmd_unlink(args):
@@ -1169,6 +1192,13 @@ def build_parser():
     attach.add_argument("--root", default="~/GameAgentKit")
     attach.add_argument("--dry-run", action="store_true")
     attach.set_defaults(func=cmd_attach)
+    verify = sp.add_parser("verify", help="Read-only: list actual Skill links, bundled versions, missing paths and collisions")
+    verify.add_argument("--root", default="~/GameAgentKit")
+    verify.add_argument("--agents", default="codex,claude,antigravity,cursor",
+                        help="Agents to inspect; default all four, unlike legacy --agents all")
+    verify.add_argument("--json", action="store_true", help="Machine-readable verification report")
+    verify.add_argument("--project", help="Warn about possible project-local same-name Skill shadows")
+    verify.set_defaults(func=cmd_verify)
     doc = sp.add_parser("doctor", help="Check global skill paths and optional project configuration")
     doc.add_argument("--root", default="~/GameAgentKit")
     doc.add_argument("--agents", default="all")
