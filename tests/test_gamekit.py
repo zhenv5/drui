@@ -379,7 +379,7 @@ class GameAgentKitTests(unittest.TestCase):
         self.assertIn('automatic activation', text)
         self.assertIn('not universal', text)
         for path in ('QUICKSTART.md', 'README.md', 'docs/DRUI_USAGE.md'):
-            self.assertIn('GameAgentKit-v' + (SOURCE / 'VERSION').read_text().strip() + '.zip',
+            self.assertIn('git clone',
                           (SOURCE / path).read_text())
 
 
