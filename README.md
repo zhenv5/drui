@@ -37,7 +37,7 @@ Copy this prompt to the coding agent to update an existing GitHub checkout safel
 Prerequisites: Git, Python 3, macOS or Linux, permission to create local Skill links. First check the [latest official stable release](https://github.com/zhenv5/drui/releases/latest) and substitute the matching Tag in the clone command.
 
 ```bash
-git clone --branch v1.4.2 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --branch v1.4.3 --depth 1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 # Save detailed installation logs locally; print only the mandatory compact verification.
 DRUI_LOG=$(mktemp)
@@ -57,12 +57,13 @@ fi
 ## Update with GitHub source
 
 ```bash
-drui update --check
+"$HOME/GameAgentKit/scripts/drui" update --check
 # After reviewing changes and ensuring the checkout is clean:
-drui update --yes
+"$HOME/GameAgentKit/scripts/drui" update --yes
+"$HOME/GameAgentKit/scripts/drui" verify
 ```
 
-The updater checks GitHub's latest stable Release to find an immutable version Tag, verifies the official Git origin, checks for local modifications, fetches the Tag using Git, confirms `VERSION` and CLI, and checks out that commit. It **does not use ZIP, extract assets, silently update external Skills, erase user edits, or invoke external installers**. `drui update --check` makes no changes. A crash mid-checkout is not guaranteed to be atomic.
+The updater checks GitHub's latest stable Release to find a reviewed version Tag, verifies the official Git origin, checks for local modifications, fetches the Tag using Git, confirms `VERSION` and CLI, and checks out that commit. It **does not use ZIP, extract assets, silently update external Skills, erase user edits, or invoke external installers**. `drui update --check` makes no changes. A crash mid-checkout is not guaranteed to be atomic.
 
 ## Start using DRUI
 
@@ -88,4 +89,4 @@ The CLI generates prompts, not a running coding agent. User tasks with code chan
 - Git provenance is not a substitute for publisher trust or source-code review. GitHub Release tags can be moved by repository administrators; verify publisher, version and commit before installation.
 - Real Agent loading, screenshots, builds and true three-party independent reviews require runtime evidence; printed prompts alone do not prove completion.
 
-See [QUICKSTART.md](QUICKSTART.md) for setup, updates and troubleshooting.
+See [QUICKSTART.md](QUICKSTART.md) and the [canonical installation and verification guide](docs/INSTALL_AND_VERIFY.md) for setup, updates and troubleshooting.
