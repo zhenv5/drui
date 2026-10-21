@@ -51,7 +51,7 @@ class InstallVerificationTests(unittest.TestCase):
         self.install('codex')
         clean = self.run_drui('verify', '--agents', 'codex').stdout.strip().splitlines()
         self.assertEqual(len(clean), 1, clean)
-        self.assertIn('PASS | 1 agents | 12/12 Skill links', clean[0])
+        self.assertIn('PASS | 1 agent | 12/12 Skill links', clean[0])
         self.assertIn('runtime untested', clean[0])
         verbose = self.run_drui('verify', '--agents', 'codex', '--verbose').stdout
         self.assertIn('[codex] 12/12 installed slots', verbose)
