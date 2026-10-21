@@ -97,7 +97,7 @@ drui sources --agent claude
 统一操作规范见 **[INSTALL_AND_VERIFY.md](INSTALL_AND_VERIFY.md)**：涵盖命令行直接安装、Agent 一键复制 Prompt、GitHub Tag 更新、短摘要、退出码和排错。
 
 ```bash
-git clone --depth 1 --branch v1.4.4 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.5 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
 "$HOME/GameAgentKit/scripts/drui" verify          # 一行摘要；必须检查退出码
@@ -105,7 +105,7 @@ bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
 "$HOME/GameAgentKit/scripts/drui" verify --json    # 机器可读
 ```
 
-DRUI 保留已有同名用户 Skills，因此从 v1.4.4 起安装/链接命令会根据内置 verify 的结果返回非零码，**仍建议最终单独运行 verify 验收**；默认四个 Agent 跨五个目录共 60 个链接，`--agents all` 也包括 Cursor。验证本地链接并不代表 Agent 已实际加载。
+DRUI 保留已有同名用户 Skills，因此从 v1.4.5 起安装/链接命令会根据内置 verify 的结果返回非零码，**仍建议最终单独运行 verify 验收**；默认四个 Agent 跨五个目录共 60 个链接，`--agents all` 也包括 Cursor。验证本地链接并不代表 Agent 已实际加载。
 
 ## 严苛三方独立评审
 
