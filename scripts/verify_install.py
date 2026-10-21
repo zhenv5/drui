@@ -142,6 +142,39 @@ def inspect(root: Path, home: Path, agents: list[str], agent_paths: dict[str, li
     return report
 
 
+def render_compact(report: dict) -> None:
+    """One-line, read-only install result. Details stay available via --verbose/--json."""
+    summary = report['summary']
+    failures = [
+        f"{agent['agent']}/{skill['name']}:{skill['status']}"
+        for agent in report['agents'] for skill in agent['skills']
+        if skill['status'] != 'OK'
+    ]
+    if report['cli']['status'] != 'OK':
+        failures.append(f"CLI:{report['cli']['status']}")
+    warnings = report['warnings']
+    status = 'PASS' if summary['complete'] else 'FAIL'
+    print(
+        f"DRUI v{report['version']} {status} | "
+        f"{len(report['agents'])} agents | "
+        f"{summary['installed']}/{summary['expected']} Skill links | "
+        f"{len(failures)} errors, {len(warnings)} warnings | runtime untested"
+    )
+    if failures:
+        shown = failures[:3]
+        tail = f", +{len(failures) - len(shown)} more" if len(failures) > len(shown) else ""
+        print("Failures: " + ", ".join(shown) + tail)
+    if warnings:
+        kinds = []
+        if any('PATH' in message for message in warnings):
+            kinds.append('PATH')
+        if any('shadow' in message.lower() for message in warnings):
+            kinds.append('project shadow')
+        if not kinds:
+            kinds.append('other')
+        print("Warnings: " + ", ".join(kinds) + " (see --verbose)")
+
+
 def render(report: dict) -> None:
     print(f"\nDRUI Skill verification — GameAgentKit v{report['version']}")
     print(f"Source: {report['root']}")
