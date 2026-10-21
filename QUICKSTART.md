@@ -9,9 +9,12 @@ Visit https://github.com/zhenv5/drui/releases/latest and choose the newest stabl
 ```bash
 git clone --depth 1 --branch v1.4.0 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
-bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
-python3 "$HOME/GameAgentKit/gamekit.py" verify --agents codex,claude,antigravity,cursor
-python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor
+DRUI_LOG=$(mktemp)
+if bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor >"$DRUI_LOG" 2>&1; then
+  "$HOME/GameAgentKit/scripts/drui" verify # mandatory one-line summary
+else
+  tail -n 5 "$DRUI_LOG" # short failure log; fix before proceeding
+fi
 "$HOME/GameAgentKit/scripts/drui" start
 ```
 
@@ -23,8 +26,7 @@ Replace `v1.4.0` with the latest **verified stable release Tag** when a newer ve
 drui update --repo zhenv5/drui --check
 drui update --repo zhenv5/drui --yes
 drui version
-python3 "$HOME/GameAgentKit/gamekit.py" verify --agents codex,claude,antigravity,cursor
-python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents codex,claude,antigravity,cursor
+"$HOME/GameAgentKit/scripts/drui" verify # mandatory one-line result
 ```
 
 `--check` does not touch local Git state. `--yes` only updates a **clean Git checkout**, fetching the official stable release tag and switching to its validated commit. No `git reset --hard`, `git pull` over local changes, third-party installer execution or third-party Skill upgrade. Source updates aren't crash-atomic; review your `git status` before a retry if interrupted.
@@ -54,12 +56,13 @@ The lock file is local (`~/GameAgentKit/.state/`, excluded from Git). No third-p
 
 ## Verify installed Skills after setup
 
-Installation prints a per-Agent summary automatically. Re-run the read-only verifier at any time:
+Installation prints a compact final verification summary automatically; use the redirected-log example above for a quiet terminal self-install. Re-run the read-only verifier at any time:
 
 ```bash
 drui verify
 drui verify --agents codex,cursor
+drui verify --verbose  # full item-by-item audit
 drui verify --json
 ```
 
-The default verifier checks all **four** Agents; `--agents all` follows the older CLI alias (Codex/Claude/Antigravity, excluding Cursor). Each bundled Skill reports the **GameAgentKit release version**, not an independently published Skill version. Third-party Skills are user-owned, and their version is `unknown` unless declared in their own `SKILL.md` metadata. `OK` means the symlink targets the expected local bundled Skill and its frontmatter is valid. `MISSING`, `BROKEN`, `COLLISION` or `INVALID` require attention; verification returns a nonzero status when the selected installation is incomplete. A project-local Skill may shadow a global one (use `--project /path/to/game` for warnings). **This is a filesystem audit, not proof that a real Agent loaded or executed the Skill.**
+The default verifier prints one line and checks all **four** Agents; failures add up to three terse details. Antigravity uses two search paths, so all four agents currently mean 60 expected links (not 48). `--agents all` follows the older CLI alias (Codex/Claude/Antigravity, excluding Cursor). Each bundled Skill reports the **GameAgentKit release version**, not an independently published Skill version. Third-party Skills are user-owned, and their version is `unknown` unless declared in their own `SKILL.md` metadata. `OK` means the symlink targets the expected local bundled Skill and its frontmatter is valid. `MISSING`, `BROKEN`, `COLLISION` or `INVALID` require attention; verification returns a nonzero status when the selected installation is incomplete. A project-local Skill may shadow a global one (use `--project /path/to/game` for warnings). **This is a filesystem audit, not proof that a real Agent loaded or executed the Skill.**
