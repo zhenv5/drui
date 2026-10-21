@@ -7,7 +7,7 @@ DRUI is a set of 12 bundled Skills and 20 independent workflows for game UI/UX d
 Visit https://github.com/zhenv5/drui/releases/latest and choose the newest stable tag `vX.Y.Z`. Run:
 
 ```bash
-git clone --depth 1 --branch v1.4.0 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 DRUI_LOG=$(mktemp)
 if bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor >"$DRUI_LOG" 2>&1; then
