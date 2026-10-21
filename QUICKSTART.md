@@ -7,18 +7,19 @@ DRUI is a set of 12 bundled Skills and 20 independent workflows for game UI/UX d
 Visit https://github.com/zhenv5/drui/releases/latest and choose the newest stable tag `vX.Y.Z`. Run:
 
 ```bash
-git clone --depth 1 --branch v1.4.1 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+git clone --depth 1 --branch v1.4.2 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
 bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
 DRUI_LOG=$(mktemp)
 if bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor >"$DRUI_LOG" 2>&1; then
   "$HOME/GameAgentKit/scripts/drui" verify # mandatory one-line summary
 else
-  tail -n 5 "$DRUI_LOG" # short failure log; fix before proceeding
+  echo "DRUI install failed; details: $DRUI_LOG" >&2
+  tail -n 3 "$DRUI_LOG" >&2
+  false # retain nonzero status for scripts
 fi
-"$HOME/GameAgentKit/scripts/drui" start
 ```
 
-Replace `v1.4.1` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions.
+Replace `v1.4.2` with the latest **verified stable release Tag** when a newer version is published. Git checks out the tagged source locally (often detached HEAD). For the terminal command `drui`, add `~/.local/bin` to PATH if necessary. An existing `~/GameAgentKit` is never overwritten by the bootstrap instructions.
 
 ## Update directly from GitHub (no archive)
 
@@ -55,6 +56,8 @@ drui deps check
 The lock file is local (`~/GameAgentKit/.state/`, excluded from Git). No third-party Skill is installed, overwritten or upgraded by DRUI. Verify the actual Agent loading outcome independently.
 
 ## Verify installed Skills after setup
+
+See [INSTALL_AND_VERIFY.md](docs/INSTALL_AND_VERIFY.md) for the canonical CLI/Agent setup, quiet output, troubleshooting, and security model. **A successful install.sh exit alone is insufficient**: it may skip same-name user Skills. Final `drui verify` must also exit 0.
 
 Installation prints a compact final verification summary automatically; use the redirected-log example above for a quiet terminal self-install. Re-run the read-only verifier at any time:
 
