@@ -154,9 +154,11 @@ def render_compact(report: dict) -> None:
         failures.append(f"CLI:{report['cli']['status']}")
     warnings = report['warnings']
     status = 'PASS' if summary['complete'] else 'FAIL'
+    agent_count = len(report['agents'])
+    agent_label = 'agent' if agent_count == 1 else 'agents'
     print(
         f"DRUI v{report['version']} {status} | "
-        f"{len(report['agents'])} agents | "
+        f"{agent_count} {agent_label} | "
         f"{summary['installed']}/{summary['expected']} Skill links | "
         f"{len(failures)} errors, {len(warnings)} warnings | runtime untested"
     )
