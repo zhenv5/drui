@@ -1,0 +1,21 @@
+# Do not commit local agent secrets or personal configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.DS_Store
+.coverage
+.coverage.*
+dist/
+.backups/
+.gamekit-updates.json
+local-reviews/
+
+# Local, private external-skill fingerprint and approval history
+.state/

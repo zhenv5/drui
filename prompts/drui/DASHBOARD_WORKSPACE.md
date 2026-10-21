@@ -1,0 +1,3 @@
+# Dashboard / tool workspace layout
+
+Inspect user workflows and information density before selecting a layout. Propose one coherent workspace model (summary → detail → action, split-view, tabbed mobile or progressive disclosure), not arbitrary dashboard tiles. Use consistent chart/card hierarchy, empty/loading/errors, keyboard and dialog behavior, responsive narrow/wide composition. If working in a parent dashboard for a children's game, separate parent controls from child game UI. Validate two complete tasks with real state changes, not just screenshots. Use one unified theme and simplify redundant panels.

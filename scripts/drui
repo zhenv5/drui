@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""DRUI: terminal entrypoint for GameAgentKit workflows and verified updates.
+
+`drui list` exposes the menu; `drui prompt <stage>` prints a pasteable
+instruction for an agent. Workflow commands never execute agent actions; `update --yes` explicitly upgrades the kit.
+"""
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from gamekit import WORKFLOW_STAGES, DRUI_UI_SOURCE_CHOICES, show_workflow_menu, show_workflow_help, show_ui_sources, main as gamekit_main  # noqa: E402
+
+
+def cli(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if not argv or argv[0] in ("list", "ls"):
+        p = argparse.ArgumentParser(prog="drui list", description="Show the full DRUI workflow menu")
+        p.add_argument("--json", action="store_true", help="Print a parseable workflow catalog")
+        args = p.parse_args(argv[1:] if argv else [])
+        show_workflow_menu(json_format=args.json)
+        return 0
+
+    if argv[0] in ("-h", "--help"):
+        print("DRUI — one Skill, 20 independent UI/game review and implementation workflows.\n")
+        print("  drui version               Show installed version and pinned update source")
+        print("  drui list                  Show all workflows")
+        print("  drui list --json           Machine-readable workflow catalog")
+        print("  drui help <workflow>       Explain one workflow")
+        print("  drui sources               Inspect UI method source priority")
+        print("  drui plus                  Shortcut: full with original Oil UI Plus")
+        print("  drui pro                   Shortcut: full with installed official Oil UI Pro")
+        print("  drui prompt <workflow> --ui-source auto|pro|plus|oil-ui|drui")
+        print("  drui prompt <workflow>     Print pasteable agent prompt")
+        print("  drui <workflow>            Shorthand for 'drui prompt <workflow>'")
+        print("  drui deps list             Show all USER-owned external Skills")
+        print("  drui deps conflicts        Identify user copies with bundled Skill names")
+        print("  drui deps lock             Baseline external Skill fingerprints once")
+        print("  drui deps check            Detect upstream changes; fail on drift")
+        print("  drui deps approve --name oil-ui --evidence REVIEW.md")
+        print("  drui update --check        Check latest GitHub Release")
+        print("  drui update --yes          Verify SHA-256 and upgrade (backups preserved)")
+        print("  drui prompt <workflow> --project /path/to/game")
+        print("\nExample: drui prompt review-loop\n")
+        print("Terminal commands only PRINT prompts. In an AI agent chat, type 'drui list'\n"
+              "or 'Use drui, stage review-loop, on this project.' to request execution.")
+        return 0
+
+    if argv[0] in ("sources", "providers"):
+        p = argparse.ArgumentParser(prog="drui sources")
+        p.add_argument("--agent", default="all", help="codex, claude, antigravity, cursor, or all")
+        args = p.parse_args(argv[1:])
+        show_ui_sources(ROOT, agent=args.agent)
+        return 0
+
+    if argv[0] in ("plus", "pro"):
+        # Terminal shortcuts print the FULL workflow prompt; they do not run an Agent.
+        rest = ["full", "--ui-source", argv[0], *argv[1:]]
+        argv = ["prompt", *rest]
+
+    if argv[0] in ("update", "deps"):
+        old = sys.argv[:]
+        try:
+            sys.argv = [str(ROOT / "gamekit.py"), argv[0], *argv[1:], "--root", str(ROOT)]
+            return gamekit_main()
+        finally:
+            sys.argv = old
+
+    if argv[0] in ("version", "--version"):
+        from gamekit import VERSION
+        from scripts.github_update import configured_repo
+        print(f"DRUI / GameAgentKit v{VERSION}")
+        print(f"Installed at: {ROOT}")
+        print(f"GitHub source: {configured_repo(ROOT) or 'NOT CONFIGURED (use drui update --repo zhenv5/drui --check)'}")
+        print("Latest release: NOT CHECKED (offline)")
+        return 0
+
+    if argv[0] in ("help", "show"):
+        p = argparse.ArgumentParser(prog="drui help")
+        p.add_argument("workflow", choices=sorted(WORKFLOW_STAGES))
+        args = p.parse_args(argv[1:])
+        show_workflow_help(args.workflow)
+        return 0
+
+    if argv[0] == "prompt":
+        rest = argv[1:]
+    elif argv[0] in WORKFLOW_STAGES:
+        rest = argv
+    else:
+        print(f"Unknown DRUI command {argv[0]!r}. Run: drui list", file=sys.stderr)
+        return 2
+
+    p = argparse.ArgumentParser(prog="drui prompt", description="Print one DRUI agent prompt; does not run it")
+    p.add_argument("workflow", choices=sorted(WORKFLOW_STAGES))
+    p.add_argument("--project", help="Optional path to an existing game repository")
+    p.add_argument("--ui-source", choices=DRUI_UI_SOURCE_CHOICES, default="auto", help="Choose Pro > Plus > Oil UI > DRUI automatically or force exact source")
+    p.add_argument("--agent", default="all", help="Check source availability for one agent")
+    p.add_argument("--output", help="Write the prompt to a new file")
+    p.add_argument("--force", action="store_true", help="Allow overwriting output file")
+    args = p.parse_args(rest)
+    delegated = ["workflow", "prompt", "--stage", args.workflow, "--root", str(ROOT), "--ui-source", args.ui_source, "--agent", args.agent]
+    if args.project:
+        delegated.extend(["--project", args.project])
+    if args.output:
+        delegated.extend(["--output", args.output])
+    if args.force:
+        delegated.append("--force")
+    old = sys.argv[:]
+    try:
+        sys.argv = [str(ROOT / "gamekit.py"), *delegated]
+        return gamekit_main()
+    finally:
+        sys.argv = old
+
+
+if __name__ == "__main__":
+    raise SystemExit(cli())

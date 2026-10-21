@@ -1,0 +1,34 @@
+name: Publish DRUI / GameAgentKit Release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax check and tests
+        run: |
+          python3 -m compileall -q gamekit.py scripts tests
+          python3 -m unittest discover -s tests -v
+      - name: Build ZIP + SHA256
+        run: python3 scripts/create_release.py
+      - name: Verify output
+        run: |
+          unzip -t dist/GameAgentKit-v*.zip
+          cd dist && sha256sum -c GameAgentKit-v*.zip.sha256
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/GameAgentKit-${GITHUB_REF_NAME}.zip" \
+            "dist/GameAgentKit-${GITHUB_REF_NAME}.zip.sha256" \
+            --verify-tag --title "DRUI / GameAgentKit ${GITHUB_REF_NAME}" \
+            --generate-notes
