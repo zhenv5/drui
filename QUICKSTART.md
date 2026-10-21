@@ -1,4 +1,10 @@
-# Quickstart — GameAgentKit 1.1.0
+# Quickstart — GameAgentKit 1.2.0
+
+## 未安装？直接把 Prompt 复制给 Agent
+
+访问 https://github.com/zhenv5/drui#install-via-agent ，在 README 中复制“首次安装”或“更新现有 DRUI”的完整 Prompt，粘贴至拥有本机终端权限的 Coding Agent。Agent 应自己预检、校验官方 Release、执行安全安装/更新并实际测试。复制文本本身不会自动安装。
+
+已安装 DRUI 时使用 `drui copy update` 直接复制升级 Prompt 到剪贴板；`drui agent update` 可打印纯文本，适合无桌面剪贴板的环境。不要自动更改第三方 Skills。
 
 ## 第一次使用 DRUI：先选目标，再运行工作流
 
@@ -14,7 +20,7 @@ drui prompt review-user     # 打印可复制指令（不运行 Agent）
 
 在 Agent 对话中使用 `Use the drui skill, stage review-user, on this project.` 才是请求实际执行。终端的 `prompt` 只输出文本。`drui deps check` 可检测已锁定的外部 Skill 是否变更，但不会执行或升级第三方代码。
 
-## Public v1.1.0：Oil UI Plus 与调用顺序
+## Public v1.2.0：Oil UI Plus 与调用顺序
 
 UI 方法统一优先级（不代表顺序执行四次）：**`oil-ui-pro`（官方、实际已安装） > `oil-ui-plus`（GameAgentKit 原创内置） > `oil-ui`（已安装开源版） > DRUI 其他内置通用流程**。DRUI 永远负责 workflow 编排、三方独立审查及验收。详见 [`docs/UI_SOURCE_ROUTING.md`](docs/UI_SOURCE_ROUTING.md)。
 
@@ -38,11 +44,11 @@ drui sources --agent claude
 
 在 Agent 对话中：`drui review-loop --ui-source plus`、`drui full`、`drui sources`。终端 `drui` 只打印提示词；**不会在命令行直接运行设计和审查**。
 
-# DRUI / GameAgentKit 1.1.0 — Quickstart (macOS / Linux)
+# DRUI / GameAgentKit 1.2.0 — Quickstart (macOS / Linux)
 
 **Skill names:** `drui` (workflow orchestrator), `oil-ui-plus` (our original Pro-like UI method); optional external `oil-ui` and official paid `oil-ui-pro`. The extension is global and reusable for any game or UI project.
 
-## DRUI short commands and UI method priority (v1.1.0)
+## DRUI short commands and UI method priority (v1.2.0)
 
 After initial installation or upgrade, `gamekit.py link --agents all` safely makes `~/.local/bin/drui` point to the canonical Skill tool. No existing `drui` command or shell startup files are replaced. If not on PATH, run `python3 ~/GameAgentKit/scripts/drui list` or manually add `export PATH="$HOME/.local/bin:$PATH"` to `~/.zshrc`.
 
@@ -56,15 +62,15 @@ In agent chat: type **`drui list`**, **`drui review-tl`** or **`drui review-loop
 
 ## 1. First-time install (Codex + Claude Code + Antigravity)
 
-Download the `GameAgentKit-v1.1.0.zip` asset from https://github.com/zhenv5/drui/releases/tag/v1.1.0 into `~/Downloads`:
+Download the `GameAgentKit-v1.2.0.zip` asset from https://github.com/zhenv5/drui/releases/tag/v1.2.0 into `~/Downloads`:
 
 ```bash
-mkdir -p "$HOME/Downloads/GameAgentKit-v1.1.0"
-unzip "$HOME/Downloads/GameAgentKit-v1.1.0.zip" -d "$HOME/Downloads/GameAgentKit-v1.1.0"
+mkdir -p "$HOME/Downloads/GameAgentKit-v1.2.0"
+unzip "$HOME/Downloads/GameAgentKit-v1.2.0.zip" -d "$HOME/Downloads/GameAgentKit-v1.2.0"
 
 # Show planned changes, then install
-bash "$HOME/Downloads/GameAgentKit-v1.1.0/GameAgentKit/install.sh" --agents all --dry-run
-bash "$HOME/Downloads/GameAgentKit-v1.1.0/GameAgentKit/install.sh" --agents all
+bash "$HOME/Downloads/GameAgentKit-v1.2.0/GameAgentKit/install.sh" --agents all --dry-run
+bash "$HOME/Downloads/GameAgentKit-v1.2.0/GameAgentKit/install.sh" --agents all
 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents all
 ```
 
@@ -72,11 +78,11 @@ Default canonical root: `~/GameAgentKit/`. `all` means Codex, Claude Code, Antig
 
 ## 2. Upgrade if you already installed a previous GameAgentKit release
 
-Extract v1.1.0 ZIP **into a new staging folder** using the unzip command above; don't unpack over `~/GameAgentKit`:
+Extract v1.2.0 ZIP **into a new staging folder** using the unzip command above; don't unpack over `~/GameAgentKit`:
 
 ```bash
-python3 "$HOME/GameAgentKit/gamekit.py" upgrade --from "$HOME/Downloads/GameAgentKit-v1.1.0/GameAgentKit" --dry-run
-python3 "$HOME/GameAgentKit/gamekit.py" upgrade --from "$HOME/Downloads/GameAgentKit-v1.1.0/GameAgentKit"
+python3 "$HOME/GameAgentKit/gamekit.py" upgrade --from "$HOME/Downloads/GameAgentKit-v1.2.0/GameAgentKit" --dry-run
+python3 "$HOME/GameAgentKit/gamekit.py" upgrade --from "$HOME/Downloads/GameAgentKit-v1.2.0/GameAgentKit"
 python3 "$HOME/GameAgentKit/gamekit.py" link --agents all
 python3 "$HOME/GameAgentKit/gamekit.py" doctor --agents all
 ```

@@ -8,12 +8,55 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from gamekit import WORKFLOW_STAGES, WORKFLOW_CATEGORIES, DRUI_UI_SOURCE_CHOICES, show_workflow_menu, show_workflow_help, show_ui_sources, main as gamekit_main  # noqa: E402
+
+
+AGENT_SETUP_PROMPTS = ("install", "update")
+
+
+def agent_setup_prompt(action):
+    """Read the shipped source-of-truth prompt; never fetch or execute a remote script."""
+    if action not in AGENT_SETUP_PROMPTS:
+        raise ValueError("Unknown DRUI Agent setup action")
+    path = ROOT / "prompts" / "agent-setup" / (action + ".txt")
+    return path.read_text(encoding="utf-8").strip() + "\n"
+
+
+def copy_to_clipboard(value):
+    """Copy plain text only; no shell, no prompt execution, no hidden fallback."""
+    commands = (("pbcopy",), ("wl-copy",), ("xclip", "-selection", "clipboard"),
+                ("xsel", "--clipboard", "--input"))
+    for command in commands:
+        if not shutil.which(command[0]):
+            continue
+        try:
+            subprocess.run(command, input=value, text=True, capture_output=True, timeout=5, check=True)
+            return command[0]
+        except (OSError, subprocess.SubprocessError):
+            continue
+    return None
+
+
+def show_agent_setup(action, *, copy=False):
+    prompt = agent_setup_prompt(action)
+    if copy:
+        tool = copy_to_clipboard(prompt)
+        if tool:
+            print(f"Copied DRUI {action} Agent prompt to clipboard using {tool}.")
+            print("Paste into a terminal-capable coding Agent; this command does not install or update DRUI.")
+            return 0
+        print("Clipboard tool unavailable. Use the following prompt and copy manually:", file=sys.stderr)
+        print(prompt, end="")
+        return 1
+    print(prompt, end="")
+    return 0
 
 
 def show_welcome(*, detailed=False):
@@ -23,6 +66,7 @@ def show_welcome(*, detailed=False):
     print("  1. drui list --beginner       先看 6 个适合入门的工作流")
     print("  2. drui help usability-review  了解某个流程是否适合你")
     print("  3. drui prompt review-loop    生成可复制到 Agent 对话的指令")
+    print("  安装/更新 DRUI：GitHub README 复制 Prompt；或 drui copy update")
     print("\n不知道选哪个? / Choose by goal:")
     print("  新用户不会操作    → usability-review (只读)")
     print("  UI 不够漂亮     → visual-review    (只读)")
@@ -42,7 +86,10 @@ def show_welcome(*, detailed=False):
     print("  drui deps check             检查已锁定外部 Skill 是否变更")
     print("  drui sources                查看 UI 来源与优先级")
     print("  drui list --search 操作     根据问题搜索工作流")
-    print("\n未安装? 阅读 QUICKSTART.md 或 https://github.com/zhenv5/drui#readme")
+    print("  drui agent install          输出给 Agent 的首次安装 Prompt")
+    print("  drui copy update            一条命令复制更新 Prompt 到剪贴板")
+    print("\n首次安装时还没有 drui 命令：直接复制 GitHub README 中的安装 Prompt 给 Agent。")
+    print("参考: https://github.com/zhenv5/drui#install-via-agent")
     print("如果出现 drui: command not found，可执行:")
     print("  python3 ~/GameAgentKit/scripts/drui start")
     print("若不在 PATH，可手动将 ~/.local/bin 加入 PATH；安装器不会修改 shell 配置。")
@@ -61,6 +108,9 @@ def show_commands():
     print("  drui list --search 操作            中英文搜索")
     print("  drui list --json                   机器可读目录")
     print("  drui prompt <workflow>             只打印 Agent 指令")
+    print("  drui agent install|update          输出安装/更新 Prompt（不执行操作）")
+    print("  drui agent install|update --copy   复制到系统剪贴板")
+    print("  drui copy install|update           快捷复制安装/更新 Prompt")
     print("  drui prompt <workflow> --project . 指定项目路径")
     print("  drui <workflow>                    prompt 快捷方式（仍不执行）")
     print("  drui plus | drui pro               指定 UI 方法生成 full Prompt")
@@ -86,6 +136,15 @@ def cli(argv=None):
             return 2
         show_welcome(detailed=True)
         return 0
+    if argv[0] in ("agent", "agent-prompt", "copy"):
+        command = argv[0]
+        parser = argparse.ArgumentParser(prog="drui " + command,
+                                         description="Copy a safe install/update prompt to a coding Agent")
+        parser.add_argument("action", choices=AGENT_SETUP_PROMPTS)
+        if command != "copy":
+            parser.add_argument("--copy", action="store_true", help="Copy prompt to clipboard, rather than print")
+        args = parser.parse_args(argv[1:])
+        return show_agent_setup(args.action, copy=command == "copy" or getattr(args, "copy", False))
     if argv[0] in ("list", "ls"):
         p = argparse.ArgumentParser(prog="drui list", description="Browse 20 workflows by goal, category or keyword")
         p.add_argument("--json", action="store_true", help="Machine-readable workflow catalog")
@@ -100,7 +159,7 @@ def cli(argv=None):
             show_welcome()
             return 0
         if len(argv) != 2:
-            print("Usage: drui help [workflow|commands|deps|list|prompt|update]", file=sys.stderr)
+            print("Usage: drui help [workflow|commands|deps|list|prompt|agent|copy|update]", file=sys.stderr)
             return 2
         subject = argv[1]
         if subject in ("-h", "--help", "start", "quickstart", "onboard"):
@@ -115,6 +174,10 @@ def cli(argv=None):
             print("建议顺序: drui deps list → drui deps conflicts → drui deps lock（审查后）")
             print("之后: drui deps check; 变更需独立审查、实际兼容测试与 evidence 后才能 approve。")
             print("规则详见 docs/EXTERNAL_SKILL_UPDATES.md；指纹检查不等于安全保证。")
+        elif subject in ("agent", "agent-prompt", "copy", "install"):
+            print("未安装 DRUI：在 https://github.com/zhenv5/drui#install-via-agent 复制安装 Prompt 给 Agent。")
+            print("已安装：drui agent install|update  输出完整 Prompt；drui copy update 复制到剪贴板。")
+            print("仅复制，不会运行安装脚本、升级 DRUI 或第三方 Skill。")
         elif subject == "update":
             print("drui update --check — 仅检查最新稳定发行版")
             print("drui update --yes   — 校验发布包 SHA-256 后备份并更新托管文件，不升级外部 Skills")
@@ -165,7 +228,7 @@ def cli(argv=None):
     elif argv[0] in WORKFLOW_STAGES:
         rest = argv
     else:
-        close = difflib.get_close_matches(argv[0], list(WORKFLOW_STAGES) + ["help", "list", "start", "deps", "update"], n=3, cutoff=0.5)
+        close = difflib.get_close_matches(argv[0], list(WORKFLOW_STAGES) + ["help", "list", "start", "deps", "update", "agent", "copy"], n=3, cutoff=0.5)
         print(f"Unknown DRUI command {argv[0]!r}." + (" Did you mean: " + ", ".join(close) + "?" if close else ""), file=sys.stderr)
         print("Try: drui help  |  drui list --beginner", file=sys.stderr)
         return 2

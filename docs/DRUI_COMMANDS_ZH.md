@@ -141,3 +141,19 @@ python3 ~/GameAgentKit/gamekit.py workflow prompt --stage visual-review
 ```
 
 更多资料：`skills/drui/SKILL.md`、`docs/DRUI_STRICT_REVIEW_PROTOCOL.md`、`docs/DRUI_REVIEW_CHEATSHEET_ZH.md`。
+
+## 让 Agent 安装或更新 DRUI（复制 Prompt）
+
+第一次使用无需安装 drui 命令：到 [官方 README](https://github.com/zhenv5/drui#install-via-agent)，从“首次安装”或“升级现有 DRUI”代码块点击复制，粘贴到支持终端的 Agent 会话。
+
+已安装的用户：
+
+```bash
+drui agent install          # 显示可粘贴给 Agent 的安装指令
+drui agent update           # 显示更新指令
+drui copy install           # 复制到系统剪贴板
+drui copy update            # 复制更新 Prompt（不执行更新）
+drui agent update --copy    # 同上
+```
+
+本功能**只复制文本**，不执行 Agent、不联网、不操作用户文件或第三方 Skills。未检测到 pbcopy、wl-copy、xclip、xsel 时会输出可手动复制的内容，返回非零码；不得声称已复制。

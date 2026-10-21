@@ -1,15 +1,55 @@
-# DRUI — GameAgentKit v1.1.0
+# DRUI — GameAgentKit v1.2.0
 
 **DRUI** is the public-facing skill/workflow command; **GameAgentKit** is the internal Python toolkit and installation root. The names intentionally differ.
 
 **Official repository:** https://github.com/zhenv5/drui  
-**Installable release asset:** `GameAgentKit-v1.1.0.zip` from [GitHub Releases](https://github.com/zhenv5/drui/releases/tag/v1.1.0). Do **not** use GitHub's generic “Source code (zip)” for the installer because it contains a different outer directory.
+**Installable release asset:** `GameAgentKit-v1.2.0.zip` from [GitHub Releases](https://github.com/zhenv5/drui/releases/tag/v1.2.0). Do **not** use GitHub's generic “Source code (zip)” for the installer because it contains a different outer directory.
 
 **Note:** v1.0.0 is the first public release. Documents named `CHANGELOG_v1.1.md` through `CHANGELOG_v1.7.md` describe the toolkit's earlier internal development iterations, not published releases following v1.0.0.
 
 **12 bundled Skills · 20 selectable workflows · local third-party dependency fingerprint approval.** CLI commands print agent prompts; they do not themselves perform app editing, agent review, or runtime validation.
 
-## New here? Start in 60 seconds (v1.1.0)
+## Install via Agent
+
+**No DRUI installed yet?** Copy the first prompt using GitHub's code-block **Copy** icon and paste it into a terminal-capable Codex / Claude Code / Antigravity / Cursor conversation. You do not have to run a shell installer yourself. The Agent must have terminal access and must verify results; merely pasting text does not install anything.
+
+### 一键复制：首次安装 / Copy to Agent — Install
+
+```text
+请在我当前使用的 macOS/Linux 电脑上安装 DRUI（内部框架 GameAgentKit），官方唯一来源：https://github.com/zhenv5/drui 。你是执行安装的 coding agent，请实际完成操作，不要只给我安装教程。
+
+1. 先确认本机可运行 Python 3、拥有可写的用户目录，并确认你能在此 Agent 会话中使用终端。如无法运行命令，明确说明，绝不声称已安装。检查 ~/GameAgentKit、~/.local/bin/drui 及 Codex/Claude Code/Antigravity/Cursor 的既有 Skills；不得覆盖用户已有文件、目录、不同来源的同名 Skill 或 symlink。如果已经安装，先报告版本并改用官方更新流程，不要直接重新安装。
+2. 访问 https://github.com/zhenv5/drui/releases/latest ，确认发布者 zhenv5/drui，选择最新的正式（非 draft / prerelease）版本。只获取该 Release 的 GameAgentKit-vX.Y.Z.zip 和同名 .sha256 校验文件；核对版本与 SHA-256，拒绝校验失败、重定向到不可信站点或不符合预期结构的包。SHA-256 仅用于完整性，不等同于签名或代码安全保证。不要运行 curl | bash 或来历不明的第三方安装脚本。
+3. 在临时目录安全解包并阅读 README.md、QUICKSTART.md、install.sh 和关键安装逻辑；留意危险脚本、外部依赖、权限和将写入的路径。先执行安装脚本的 --dry-run，确认不会覆盖用户自有 Skill 后再执行安装。默认安装至 ~/GameAgentKit，并为本机可用的 Agent 建立共享 Skill 入口；不要无故修改 shell profile 或项目文件。若遇到冲突，请保留原文件并列出需要我确认的决定，不要强行覆盖。
+4. 通过实际命令检查：python3 ~/GameAgentKit/gamekit.py doctor --agents all（如果只安装部分 Agent 则使用相同 scope）、python3 ~/GameAgentKit/scripts/drui version、python3 ~/GameAgentKit/scripts/drui start、python3 ~/GameAgentKit/scripts/drui deps conflicts。若 drui 已进入 PATH，也验证 drui list --beginner。把版本、安装位置、Agent 覆盖范围、检查结果、潜在冲突和剩余手动步骤汇报给我。不存在运行环境时，不得虚报成功。
+5. 外部油 UI/其他第三方 Skills 始终由用户或其发布者管理：不要自动安装、升级、删除或批准外部依赖；不要创建未经审查的 deps lock，也不要绕过指纹检查。只安装官方 DRUI 捆绑的 12 个内置 Skills。
+```
+
+### 一键复制：升级现有 DRUI / Copy to Agent — Update
+
+```text
+请在我当前使用的 macOS/Linux 电脑上升级已安装的 DRUI（GameAgentKit）到官方最新稳定版本。官方仓库：https://github.com/zhenv5/drui 。你是执行升级的 coding agent，请实际完成检查、备份、更新和回归验证，不要只给我文字指南。
+
+1. 先检查 ~/GameAgentKit、当前 drui version、已固定的 GitHub 更新源、现有用户 Skills 与指纹状态。运行 drui deps list、drui deps conflicts、drui deps check；如果 drui 不在 PATH，使用 python3 ~/GameAgentKit/scripts/drui。`deps check` 发现漂移要如实报告，但绝不自动 lock、approve、覆盖或升级第三方 Skills。如果目录不是官方 DRUI，或固定的源不是 zhenv5/drui，停止并征询我的决定，不能偷偷换源。
+2. 用内置安全更新器先执行 drui update --repo zhenv5/drui --check（若已有相同来源也可以省略 --repo），确认官方 GitHub Release 的最新稳定版本及版本差异。阅读 Release Notes 和变更；若已是最新则不要重复安装。如果无法联网、没有通过预检或需要强制覆盖用户文件，不要执行更新。
+3. 若来源及预检正常，执行 drui update --repo zhenv5/drui --yes（或等价的 python3 ~/GameAgentKit/gamekit.py update ... --root ~/GameAgentKit）。让内置更新器校验 Release ZIP 和 SHA-256、使用安全暂存与备份，并仅更新 GameAgentKit 托管文件。不要用 git pull、unzip 直接覆盖 ~/GameAgentKit，也不要运行第三方升级器。更新过程中发生错误须保留现场并报告，不能谎称已经回滚或完成。
+4. 升级后运行 drui version、drui list --beginner、python3 ~/GameAgentKit/gamekit.py doctor --agents <你实际安装的 Agent scope>、drui deps conflicts 和 drui deps check；必要时先使用 python3 ~/GameAgentKit/gamekit.py link --agents all 的安全重链机制，不能覆盖用户自己的同名 Skill 或命令。报告升级前后版本、发行来源、检查结果、备份路径及仍需处理的冲突。
+5. 绝不自动修改第三方 oil-ui / oil-ui-pro 等 Skills，不执行外部安装脚本，也不把 SHA-256 指纹检查表述成兼容性或运行安全证明。
+```
+
+After installation, you can also use the local clipboard (macOS pbcopy / Linux wl-copy, xclip or xsel):
+
+```bash
+drui agent install           # print exactly the installation prompt above
+drui agent update            # print exactly the update prompt above
+drui copy install            # copy installation prompt to clipboard
+drui copy update             # copy update prompt to clipboard
+drui agent update --copy     # alternate spelling
+```
+
+**Copy != execute.** These commands never install, upgrade or call an Agent. The first-time prompts are included in the repo under [`prompts/agent-setup/`](prompts/agent-setup/) and can be audited independently. See [`QUICKSTART.md`](QUICKSTART.md) for manual commands.
+
+## New here? Start in 60 seconds (v1.2.0)
 
 DRUI can help decide which workflow to use before you touch the project. The terminal **never runs your Agent**: it explains a workflow or prints a prompt you can paste into Codex, Claude Code, Antigravity or Cursor.
 

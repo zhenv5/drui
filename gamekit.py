@@ -12,7 +12,7 @@ from pathlib import Path
 
 from scripts import dependency_guard as depguard
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 HERE = Path(__file__).resolve().parent
 AGENT_PATHS = {
     "codex": [".agents/skills"],

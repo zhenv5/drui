@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.0 — Copy-to-Agent installation and update prompts
+
+- Added two copy-ready prompts at the top of GitHub README, usable before DRUI is installed; Source of Truth: `prompts/agent-setup/`.
+- Added `drui agent install|update`, `drui agent update --copy`, and `drui copy install|update` with platform clipboard detection and explicit failure fallback.
+- Prompts require official stable GitHub Release, ZIP SHA-256 verification, dry-run, collision preservation, real acceptance checks, and no silent third-party Skill changes.
+- Added regression tests for prompt parity, clipboard success/failure, and read-only generation.
+
+
 ## v1.1.0 — Beginner-friendly help and workflow discovery (2026-10-20)
 
 - Added `drui start` and useful no-argument `drui help` with goal-based workflow selection, non-execution caveat and Agent chat examples.
