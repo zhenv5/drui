@@ -12,7 +12,7 @@ from pathlib import Path
 
 from scripts import dependency_guard as depguard
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 HERE = Path(__file__).resolve().parent
 AGENT_PATHS = {
     "codex": [".agents/skills"],
@@ -654,16 +654,42 @@ WORKFLOW_STAGES = {
     'review-loop': '三方评审 → 修复 → 重审闭环（可改代码）',
  }
 
-# A single canonical registry drives the terminal menu, machine-readable output,
-# per-stage help, and the agent-facing menu. No duplicate 20-item registries.
+# Single catalog for CLI, JSON, agent-facing documentation and detailed help.
+# Keys are stable command identifiers; avoid calling an AI agent from the CLI.
 WORKFLOW_GROUPS = (
     ("核心开发 / Core", ("full", "discover", "plan", "implement", "fix", "verify")),
     ("界面与体验 / UI & UX", ("visual-review", "usability-review", "game-feel", "screenshot-rebuild", "component-polish")),
     ("专项设计 / Specialties", ("mini-game-scene", "effects", "dashboard", "art-3d")),
     ("严苛独立评审 / Strict Reviews", ("review-tl", "review-pm", "review-user", "review-triad", "review-loop")),
 )
+WORKFLOW_CATEGORIES = ("core", "ui", "specialty", "review")
 WORKFLOW_WRITE_STAGES = frozenset({"full", "implement", "fix", "screenshot-rebuild", "component-polish", "review-loop"})
 WORKFLOW_FLEX_STAGES = frozenset({"game-feel", "mini-game-scene", "effects", "dashboard", "art-3d"})
+# The starter set is intentionally small and has both read-only and edit-capable choices.
+WORKFLOW_BEGINNER = ("full", "visual-review", "usability-review", "game-feel", "review-triad", "review-loop")
+# (when-to-use, expected-output, sample user request, searchable terms)
+WORKFLOW_GUIDE = {
+    "full": ("希望从诊断一直做到实现和验收", "改进计划、真实代码修改、测试证据及遗留问题", "从头检查并优化这个游戏的 UI 和操作流程", "start complete end to end full 开始 全流程"),
+    "discover": ("不了解问题分布，想先找出瓶颈", "现状分析、任务路径与 P0/P1/P2 问题清单", "先找出这个游戏最影响体验的问题，不要改代码", "audit diagnostic problems 找问题 诊断"),
+    "plan": ("需要先比较方案，尚未决定改法", "方向对比、约束、阶段计划和验收标准", "为主界面提出三种优化方案，先不修改", "strategy roadmap idea 方案 设计"),
+    "implement": ("已有明确方案，需要真正落地", "可运行代码、变更说明及实际验证", "按已经确定的方案实现新关卡页", "build implement coding 开发 实现"),
+    "fix": ("已经有审查报告或明确缺陷", "问题对应修复及回归检查", "按上轮 P0/P1 清单修复并回归", "bug repair defects 修复"),
+    "verify": ("需要验收已实现的内容", "测试矩阵、真实证据、通过/阻塞情况", "回归测试所有页面并报告未验证项", "test regression acceptance QA 验收 测试"),
+    "visual-review": ("页面不够精美，想先做只读视觉审查", "排版、配色、美术、层级问题及截图证据", "独立审查首页视觉品质，不修改代码", "beauty layout colors screenshot visual 美化 视觉"),
+    "usability-review": ("玩家不知道该点哪里，操作不顺", "用户任务走查、阻塞点、交互改进建议", "从新玩家角度测试如何移动和攻击，不改代码", "touch flow navigation interaction UX 操作 易用性 手势"),
+    "game-feel": ("输入、动画、音效或反馈缺乏手感", "反馈延迟/节奏/动效/音效问题及改进方案", "提升按钮、拖动、命中反馈的手感", "feel haptics audio animation responsiveness 手感 动画 音效"),
+    "screenshot-rebuild": ("已有参考截图，要在项目里真实还原", "实际界面实现、适配、交互及视觉对照", "根据参考截图还原 SwiftUI 主页面", "reference image rebuild screenshot 临摹 截图 还原"),
+    "component-polish": ("只想深度打磨一个组件", "组件全部状态、交互、适配和 QA", "打磨开始按钮的所有状态和动画", "button card component detail 组件 按钮"),
+    "mini-game-scene": ("小游戏棋盘、操作区或结算场景有问题", "场景任务流程、可玩性和布局审查/改进", "优化小游戏棋盘、控制区与结算反馈", "board playfield scene minigame 棋盘 场景"),
+    "effects": ("需要有目的地提升视觉反馈与特效", "动效方案、性能预算和验证项", "优化攻击时的命中特效和粒子", "particles motion vfx effects 粒子 特效"),
+    "dashboard": ("需要优化数据密集的工具界面", "数据层级、表格/卡片布局与交互审查", "改进统计页信息布局和图表交互", "charts admin statistics data 报告 图表 仪表盘"),
+    "art-3d": ("涉及角色、场景或 3D 资产制作", "资产要求、管线、落地与验收计划", "制定 3D 角色资产制作与集成计划", "art character asset model 3d 美术 角色"),
+    "review-tl": ("需要独立代码架构与技术风险审查", "技术缺陷、严重性及代码证据（只读）", "请 Tech Lead 独立审查实现与性能", "architecture code technical 技术 架构 代码"),
+    "review-pm": ("需要独立判断范围、价值和产品流程", "产品目标、价值、优先级与风险（只读）", "请 PM 独立审查新手引导和核心流程", "product scope priority 产品 需求"),
+    "review-user": ("想知道新用户是否能独立完成任务", "真实任务走查、卡点和证据（只读）", "请用户视角不看提示玩完第一关", "first-time player user onboarding 新手 用户"),
+    "review-triad": ("需要 TL、PM、用户三种视角独立评审", "分离的评审任务、报告与分歧（只读）", "分别做 TL、PM、用户独立评审，不能改代码", "three reviewers independent 独立 三方 评审"),
+    "review-loop": ("想把独立审查、修复与复审串成闭环", "分轮问题、代码修复、实测与重审结论", "独立评审→修复→回归→重审，最多三轮", "iteration fix review cycle loop 循环 闭环 迭代"),
+}
 
 
 def workflow_mode(stage):
@@ -674,41 +700,89 @@ def workflow_mode(stage):
     return "REVIEW ONLY / 只审查"
 
 
-def show_workflow_menu(*, json_format=False):
-    if json_format:
-        entries = []
-        for group, names in WORKFLOW_GROUPS:
-            for name in names:
-                entries.append({"name": name, "group": group, "description": WORKFLOW_STAGES[name], "mode": workflow_mode(name)})
-        print(json.dumps({"skill": "drui", "version": VERSION, "count": len(entries), "workflows": entries}, ensure_ascii=False, indent=2))
-        return
-    print(f"DRUI v{VERSION} — {len(WORKFLOW_STAGES)} workflows (1 full + 19 focused):")
-    print("Quick picks: review-loop | review-triad | visual-review | usability-review | game-feel | full")
+def workflow_category(stage):
+    for i, (_, names) in enumerate(WORKFLOW_GROUPS):
+        if stage in names:
+            return WORKFLOW_CATEGORIES[i], WORKFLOW_GROUPS[i][0]
+    fail(f"Unknown workflow: {stage}")
+
+
+def workflow_entries(*, category=None, search=None, beginner=False):
+    if category and category not in WORKFLOW_CATEGORIES:
+        fail(f"Unknown category {category!r}. Choose: {', '.join(WORKFLOW_CATEGORIES)}")
+    query = (search or "").strip().casefold()
+    entries = []
     for group, names in WORKFLOW_GROUPS:
-        print(f"\n[{group}]")
         for name in names:
-            print(f"  {name:20} {WORKFLOW_STAGES[name]}")
-    print("\nCLI: drui list | drui help review-tl | drui prompt review-loop")
-    print("Chat: 'drui list' to see this menu; 'drui review-tl' to ask your agent to run that stage.")
-    print("Note: CLI `prompt` PRINTS instructions only; does not start an agent or execute changes.")
+            slug, _ = workflow_category(name)
+            if category and slug != category:
+                continue
+            if beginner and name not in WORKFLOW_BEGINNER:
+                continue
+            when, output, example, keywords = WORKFLOW_GUIDE[name]
+            haystack = " ".join((name, group, WORKFLOW_STAGES[name], when, output, example, keywords)).casefold()
+            if query and query not in haystack:
+                continue
+            entries.append({"name": name, "group": group, "category": slug,
+                            "description": WORKFLOW_STAGES[name], "mode": workflow_mode(name),
+                            "when": when, "output": output, "example": example})
+    return entries
+
+
+def show_workflow_menu(*, json_format=False, category=None, search=None, beginner=False):
+    entries = workflow_entries(category=category, search=search, beginner=beginner)
+    if json_format:
+        print(json.dumps({"skill": "drui", "version": VERSION, "count": len(entries),
+                          "total_count": len(WORKFLOW_STAGES), "filters": {"category": category,
+                          "search": search, "beginner": beginner}, "workflows": entries},
+                         ensure_ascii=False, indent=2))
+        return
+    print(f"DRUI v{VERSION} — {len(WORKFLOW_STAGES)} workflows" + (f" ({len(entries)} shown)" if len(entries) != len(WORKFLOW_STAGES) else ""))
+    if category or search or beginner:
+        filters = ([f"category={category}"] if category else []) + ([f"search={search!r}"] if search else []) + (["beginner"] if beginner else [])
+        print("Filters: " + ", ".join(filters))
+    else:
+        print("新手先选: usability-review (操作难用) | visual-review (画面不好看) | review-loop (审查并修复)")
+        print("想从头完整改进? full    想只让三方评审? review-triad")
+    if not entries:
+        print("没有匹配的工作流。试试: drui list --category review 或 drui list --search 操作")
+        return
+    names = {entry['name'] for entry in entries}
+    for group, members in WORKFLOW_GROUPS:
+        selected = [name for name in members if name in names]
+        if not selected:
+            continue
+        print(f"\n[{group}]")
+        for name in selected:
+            mode = "只读" if workflow_mode(name).startswith("REVIEW") else "可修改" if workflow_mode(name).startswith("MAY") else "按需"
+            print(f"  {name:20} {WORKFLOW_STAGES[name]} [{mode}]")
+    print("\n下一步: drui help <workflow> 了解适用场景；drui prompt <workflow> 生成可复制的 Agent 指令")
+    print("分类: drui list --category core|ui|specialty|review  |  搜索: drui list --search 操作")
+    print("注意: 终端只打印 Prompt，不运行 Agent；在 Agent 对话中说 'Use drui, stage review-loop, on this project.'")
 
 
 def show_workflow_help(stage):
     if stage not in WORKFLOW_STAGES:
         fail(f"Unknown workflow: {stage}. Run drui list for valid names.")
-    for group, names in WORKFLOW_GROUPS:
-        if stage in names:
-            print(f"DRUI / {stage} — {WORKFLOW_STAGES[stage]}\nCategory: {group}\nMode: {workflow_mode(stage)}")
-            break
-    print(f"\nTerminal: drui prompt {stage} [--project /path/to/repo] (prints instructions)")
-    print(f"Agent chat: 'Use drui, stage {stage}, on the current project.' (asks agent to execute)")
-    print("Reference prompt: prompts/drui/stages/" + stage + ".md")
+    slug, group = workflow_category(stage)
+    when, output, example, _ = WORKFLOW_GUIDE[stage]
+    print(f"DRUI / {stage} — {WORKFLOW_STAGES[stage]}")
+    print(f"分类 / Category: {slug} ({group})")
+    print(f"权限 / Mode: {workflow_mode(stage)}")
+    print(f"适用场景 / When: {when}")
+    print(f"预期交付 / Output: {output}")
+    print(f"\nAgent 对话示例 (会请求 Agent 执行):\n  Use the drui skill, stage {stage}, on this project. {example}。")
+    print(f"\n终端命令 (只打印指令，不运行 Agent):\n  drui prompt {stage} --project /path/to/game")
+    print(f"参考工作流 / Source: prompts/drui/stages/{stage}.md")
+    if stage in ('review-triad', 'review-loop'):
+        print("独立性: TL / PM / User 需要隔离上下文与实际测试证据；做不到时必须标记 PROVISIONAL/BLOCKED。")
+    print("更多工作流: drui list --beginner | drui list --category " + slug)
 
 
 def cmd_workflow(args):
     root = Path(args.root).expanduser().resolve()
     if args.action == "list":
-        show_workflow_menu(json_format=getattr(args, 'json', False))
+        show_workflow_menu(json_format=getattr(args, 'json', False), category=getattr(args, 'category', None), search=getattr(args, 'search', None), beginner=getattr(args, 'beginner', False))
         return
     if args.action != "prompt":
         fail("Choose workflow list or workflow prompt")
@@ -1074,6 +1148,9 @@ def build_parser():
     wl = workflow_sub.add_parser("list", help="List independently invokable review and implementation stages")
     wl.add_argument("--root", default="~/GameAgentKit")
     wl.add_argument("--json", action="store_true", help="Machine-readable DRUI workflow list")
+    wl.add_argument("--beginner", action="store_true", help="Show six beginner-friendly starting points")
+    wl.add_argument("--category", choices=WORKFLOW_CATEGORIES, help="Filter: core, ui, specialty, review")
+    wl.add_argument("--search", help="Search names, descriptions and use cases (Chinese/English)")
     wl.set_defaults(func=cmd_workflow)
     wp = workflow_sub.add_parser("prompt", help="Print an agent-ready prompt for one stage or the full workflow")
     wp.add_argument("--stage", choices=list(WORKFLOW_STAGES), required=True)

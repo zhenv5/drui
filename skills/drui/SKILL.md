@@ -39,6 +39,14 @@ Read, in order:
 - **Component deep dive**: polish one component's every state, interaction, content variation and breakpoint.
 - **Mini-game scene**: playfield > controls > feedback > pause/end; preserve input legibility and frame budget.
 
+## Friendly onboarding and discoverability (v1.1.0)
+
+- `drui help` / `drui start` in Agent chat: **explain the workflow choice and first-use steps only**. Do not install or execute a workflow as a side effect.
+- `drui list --beginner`: show `full`, `visual-review`, `usability-review`, `game-feel`, `review-triad`, `review-loop` with plain-language guidance.
+- `drui list --category core|ui|specialty|review` or `drui list --search <keyword>`: filter the same 20-item canonical registry; if command execution is available, prefer the CLI's actual output over inventing a menu.
+- `drui help <stage>`: explain when it helps, what it delivers, whether the stage can change code, and a concrete sample. `drui help commands` is the CLI reference.
+- **Terminal vs Agent:** terminal `drui prompt <stage>` prints a prompt only, while a user explicitly requesting `Use the drui skill, stage <stage>, on this project` in an Agent chat asks the Agent to execute. Do not claim execution if the Agent has not actually loaded this Skill.
+
 ## DRUI command router — `drui list` (V1.5)
 
 **Interpret direct chat invocations** as DRUI requests when this Skill is installed:

@@ -1,0 +1,51 @@
+name: Publish DRUI v1.1.0 onboarding update
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-v1.1.0.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify CLI contract and full regression suite
+        run: |
+          test "$(cat VERSION)" = "1.1.0"
+          python3 -m compileall -q gamekit.py scripts tests
+          python3 -m unittest discover -s tests -v
+      - name: Create checksum-verified release asset
+        run: |
+          python3 scripts/create_release.py
+          unzip -t dist/GameAgentKit-v1.1.0.zip
+          cd dist
+          sha256sum -c GameAgentKit-v1.1.0.zip.sha256
+      - name: Publish immutable-version Git tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          TAG=v1.1.0
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists; not moving or overwriting it."
+          else
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' tag -a "$TAG" -m 'DRUI / GameAgentKit v1.1.0'
+            git push origin "$TAG"
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release exists; no automatic overwrite."
+          else
+            gh release create "$TAG" \
+              'dist/GameAgentKit-v1.1.0.zip' \
+              'dist/GameAgentKit-v1.1.0.zip.sha256' \
+              --verify-tag --title 'DRUI v1.1.0 — Beginner Onboarding' \
+              --notes-file CHANGELOG.md
+          fi

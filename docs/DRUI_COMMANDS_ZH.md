@@ -1,4 +1,4 @@
-# DRUI V1.5 — 快捷命令与 Workflow 清单
+# DRUI — 快捷命令与 Workflow 清单（持续更新）
 
 `drui` 是主流程 Skill，包含 20 个工作流；独立的 `oil-ui-plus` 是我们原创、内置的近似 Pro UI 方法 Skill（**非官方 Pro**）。按 `oil-ui-pro`（实际安装时）> `oil-ui-plus` > `oil-ui` > DRUI 兜底自动选择。
 
@@ -26,6 +26,21 @@ drui sources --agent claude
 ```
 
 在 Agent 对话中：`drui review-loop --ui-source plus`、`drui full`、`drui sources`。终端 `drui` 只打印提示词；**不会在命令行直接运行设计和审查**。
+
+## 新用户从这里开始
+
+```bash
+drui start                     # 1 分钟上手，无自动安装或执行
+drui help                      # 按目标推荐合适的工作流
+drui help commands             # 完整命令速查
+drui list --beginner           # 6 个常用工作流
+drui list --category ui        # 核心 core / 界面 ui / 专项 specialty / 独立评审 review
+drui list --search 操作         # 按中文、英文、应用场景搜索
+drui help usability-review     # 何时使用、预期交付、权限、可复制的示例
+drui prompt usability-review   # 生成 Agent Prompt，不执行
+```
+
+如果不知道选哪一个：**玩家不知道怎么操作** → `usability-review`（只读）；**美术质量不够** → `visual-review`（只读）；**需要 TL/PM/用户分别评审** → `review-triad`（只读）；**希望评审后直接修复并回归** → `review-loop`（可修改）；**全流程优化** → `full`（可修改）。终端命令不能自动运行 Agent。
 
 ## 在 Agent 对话里使用（Codex / Claude Code / Antigravity 等）
 

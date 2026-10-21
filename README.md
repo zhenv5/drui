@@ -1,13 +1,32 @@
-# DRUI — GameAgentKit v1.0.0
+# DRUI — GameAgentKit v1.1.0
 
 **DRUI** is the public-facing skill/workflow command; **GameAgentKit** is the internal Python toolkit and installation root. The names intentionally differ.
 
 **Official repository:** https://github.com/zhenv5/drui  
-**Installable release asset:** `GameAgentKit-v1.0.0.zip` from [GitHub Releases](https://github.com/zhenv5/drui/releases/tag/v1.0.0). Do **not** use GitHub's generic “Source code (zip)” for the installer because it contains a different outer directory.
+**Installable release asset:** `GameAgentKit-v1.1.0.zip` from [GitHub Releases](https://github.com/zhenv5/drui/releases/tag/v1.1.0). Do **not** use GitHub's generic “Source code (zip)” for the installer because it contains a different outer directory.
 
 **Note:** v1.0.0 is the first public release. Documents named `CHANGELOG_v1.1.md` through `CHANGELOG_v1.7.md` describe the toolkit's earlier internal development iterations, not published releases following v1.0.0.
 
 **12 bundled Skills · 20 selectable workflows · local third-party dependency fingerprint approval.** CLI commands print agent prompts; they do not themselves perform app editing, agent review, or runtime validation.
+
+## New here? Start in 60 seconds (v1.1.0)
+
+DRUI can help decide which workflow to use before you touch the project. The terminal **never runs your Agent**: it explains a workflow or prints a prompt you can paste into Codex, Claude Code, Antigravity or Cursor.
+
+```bash
+drui start                      # guided first-use tour
+drui help                       # quick goal-to-workflow chooser
+drui list --beginner            # six safe starting points
+drui list --category review     # core | ui | specialty | review
+drui list --search 操作          # search Chinese / English use cases
+drui help review-loop           # scope, write permissions, deliverables, example
+drui prompt review-loop --project /path/to/game  # print instructions ONLY
+drui help commands              # complete quick command reference
+```
+
+**Choose by goal:** Can't find the controls → `usability-review` (read-only); unpolished visuals → `visual-review` (read-only); technical/product/user independent feedback → `review-triad` (read-only); review → fix → retest → re-review → `review-loop` (may edit); end-to-end overhaul → `full` (may edit). All 20 workflows and scopes remain in `drui list --json` for tooling. The original `v1.0.0` Release is immutable; v1.1.0 adds onboarding commands.
+
+**Agent chat example:** `Use the drui skill, stage usability-review, on this project. Try the main task as a first-time user; report blockers and evidence. Do not edit files.`
 
 ## Public v1.0.0 — Third-party Skill updates (safe by default)
 
