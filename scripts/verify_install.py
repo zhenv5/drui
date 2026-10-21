@@ -164,15 +164,6 @@ def render_compact(report: dict) -> None:
         shown = failures[:3]
         tail = f", +{len(failures) - len(shown)} more" if len(failures) > len(shown) else ""
         print("Failures: " + ", ".join(shown) + tail)
-    if warnings:
-        kinds = []
-        if any('PATH' in message for message in warnings):
-            kinds.append('PATH')
-        if any('shadow' in message.lower() for message in warnings):
-            kinds.append('project shadow')
-        if not kinds:
-            kinds.append('other')
-        print("Warnings: " + ", ".join(kinds) + " (see --verbose)")
 
 
 def render(report: dict) -> None:
