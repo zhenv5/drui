@@ -63,6 +63,7 @@ def show_welcome(*, detailed=False):
     print("DRUI — GameAgentKit: 更容易做出好用、好看的游戏 UI")
     print("20 个工作流 | 12 个内置 Skills | 支持 Codex / Claude Code / Antigravity / Cursor")
     print("\n首次使用 / 1-minute quickstart:")
+    print("  0. drui verify                先确认本地 Skill 安装成功")
     print("  1. drui list --beginner       先看 6 个适合入门的工作流")
     print("  2. drui help usability-review  了解某个流程是否适合你")
     print("  3. drui prompt review-loop    生成可复制到 Agent 对话的指令")
@@ -120,6 +121,7 @@ def show_commands():
     print("  drui verify --verbose             全部 Skills 详细清单")
     print("  drui verify --json                完整机器可读报告")
     print("  drui verify --agents codex,cursor 仅检查选定 Agent")
+    print("  --agents all                      一致包含四个 Agent")
     print("  drui sources [--agent codex]       检查可用 UI 方法")
     print("  drui deps list|conflicts|lock|check|approve   外部 Skill 指纹策略")
     print("  drui update --check                查询 GitHub 稳定版本 Tag")
@@ -207,7 +209,7 @@ def cli(argv=None):
     if argv[0] in ("verify", "status", "check-install"):
         parser = argparse.ArgumentParser(prog="drui verify", description="Read-only Skill installation and version audit")
         parser.add_argument("--agents", "--agent", default="codex,claude,antigravity,cursor",
-                            help="Comma-separated Agent list; default all four. --agents all checks the three default Agents")
+                            help="Comma-separated Agent list; default all four. --agents all checks all four Agents")
         parser.add_argument("--json", action="store_true", help="Output machine-readable JSON only")
         parser.add_argument("--verbose", action="store_true", help="Full per-Skill inventory instead of compact summary")
         parser.add_argument("--project", help="Also warn about possible project-local Skill shadowing")

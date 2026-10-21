@@ -21,7 +21,7 @@ AGENT_PATHS = {
     "antigravity": [".gemini/config/skills", ".gemini/antigravity-cli/skills"],
     "cursor": [".cursor/skills"],
 }
-ALIASES = {"claude-code": "claude", "agy": "antigravity", "all": "codex,claude,antigravity"}
+ALIASES = {"claude-code": "claude", "agy": "antigravity", "all": "codex,claude,antigravity,cursor"}
 PROFILES = ["ios-swiftui", "web-game", "puzzle", "arcade", "3d-game", "generic"]
 START = "<!-- GameAgentKit: begin (managed) -->"
 END = "<!-- GameAgentKit: end (managed) -->"
@@ -286,7 +286,9 @@ def cmd_install(args):
         if configured_repo(root):
             print("Update source verified: GitHub official origin (zhenv5/drui)")
     if not args.dry_run:
-        installation_report(root, args_agents(args.agents), compact=True)
+        report = installation_report(root, args_agents(args.agents), compact=True)
+        if not report["summary"]["complete"]:
+            fail("DRUI installation incomplete: see FAIL above; existing user Skills are preserved.")
     print("\nShared root:", root)
     print("New projects already see the GLOBAL skills. Optionally add per-project context:")
     print(f"  python3 {root}/gamekit.py attach --project /path/to/game --profile ios-swiftui --name 'My Game'")
@@ -297,7 +299,9 @@ def cmd_link(args):
     provision(root, args_agents(args.agents), dry_run=args.dry_run, copy=args.copy)
     link_drui_cli(root, dry_run=args.dry_run)
     if not args.dry_run:
-        installation_report(root, args_agents(args.agents), compact=True)
+        report = installation_report(root, args_agents(args.agents), compact=True)
+        if not report["summary"]["complete"]:
+            fail("DRUI relink incomplete: see FAIL above; existing user Skills are preserved.")
 
 
 def cmd_unlink(args):
@@ -534,7 +538,7 @@ def cmd_upgrade(args):
             fail(f"Upgrade failed ({ex}); rollback INCOMPLETE: {'; '.join(errors)}. Backups: {backup}")
         fail(f"Upgrade failed ({ex}); changed files restored. Backups: {backup}")
     print(f"Upgrade completed. Unchanged files: {len(additions)-len(changed)}; custom files not in pack retained.")
-    print("After upgrading, run `link --agents all` to refresh global discovery and the CLI.")
+    print("After upgrading, run `link --agents all` then `drui verify` to check every Agent.")
 
 
 
@@ -1197,7 +1201,7 @@ def build_parser():
     verify = sp.add_parser("verify", help="Read-only: list actual Skill links, bundled versions, missing paths and collisions")
     verify.add_argument("--root", default="~/GameAgentKit")
     verify.add_argument("--agents", default="codex,claude,antigravity,cursor",
-                        help="Agents to inspect; default all four, unlike legacy --agents all")
+                        help="Agents to inspect; default all four; --agents all is equivalent")
     verify.add_argument("--json", action="store_true", help="Machine-readable verification report")
     verify.add_argument("--compact", action="store_true", help="One-line summary, at most three failure details")
     verify.add_argument("--project", help="Warn about possible project-local same-name Skill shadows")
