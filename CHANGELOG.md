@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.2 — Install docs and Tech Lead audit
+
+- Consolidate GitHub CLI/Agent install, update, compact verification, troubleshooting and trust boundaries in `docs/INSTALL_AND_VERIFY.md`.
+- Fix shell snippets so installation failures retain nonzero exit codes; require successful `drui verify` after intentionally skipped name collisions.
+- Remove stale ZIP/SHA-256 upgrade claims from `SECURITY.md` and old release instructions from the user manual.
+- Clarify 4 agents / 5 Skill paths / 60 links, optional deps baseline, PATH warning, and real-Agent-loading limitations.
+- Synchronize README, Quickstart, maintenance, CLI guide and the install/update Agent prompts; add regression coverage and a TL findings report.
+
 ## v1.4.1 — Compact verification and terminal self-install
 
 - `drui verify` now prints a one-line result by default; failures list at most three details.

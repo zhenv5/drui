@@ -59,7 +59,7 @@ CLI 负责输出文本**不会替你调用其他 Agent、运行 Xcode、执行�
 
 ## V1.7：Oil UI Plus 与调用顺序
 
-UI 方法统一优先级（不代表顺序执行四次）：**`oil-ui-pro`（官方、实际已安装） > `oil-ui-plus`（GameAgentKit 原创内置） > `oil-ui`（已安装开源版） > DRUI 其他内置通用流程**。DRUI 永远负责 workflow 编排、三方独立审查及验收。详见 [`docs/UI_SOURCE_ROUTING.md`](docs/UI_SOURCE_ROUTING.md)。
+UI 方法统一优先级（不代表顺序执行四次）：**`oil-ui-pro`（官方、实际已安装） > `oil-ui-plus`（GameAgentKit 原创内置） > `oil-ui`（已安装开源版） > DRUI 其他内置通用流程**。DRUI 永远负责 workflow 编排、三方独立审查及验收。详见 [UI_SOURCE_ROUTING.md](UI_SOURCE_ROUTING.md)。
 
 ```bash
 # 查看当前可访问的 UI 方法及自动选择结果（只检测文件，不等于成功调用）
@@ -92,35 +92,20 @@ drui sources --agent claude
 - 真机/模拟器需要系统工具、正确平台及可运行代码；无法运行时如实标记 `BLOCKED` / `NOT RUN`，不能声称 9/10。
 - 包内原创提示词不含 Oil UI Pro 专有代码/模板或授权。
 
-## 完整下载安装与从旧版迁移
+## 当前安装、更新与验证（仅 GitHub 源码）
 
-当前安装方式：`git clone --branch v1.3.0 https://github.com/zhenv5/drui.git ~/GameAgentKit`。无 ZIP 安装。
-
-见本包 `QUICKSTART.md` 和 `README.md` 的首次安装、版本升级、`migrate-drui` 与 `register-external` 小节。
-
-## V1.2 → V1.3 迁移：仅重命名本包的增强 Skill
-
-旧名称 `oil-ui-enhanced-review` 只用于向后兼容识别，不会继续安装。不要将现有的 `oil-ui` 改名；它是用户独立的 Skill。
+统一操作规范见 **[INSTALL_AND_VERIFY.md](INSTALL_AND_VERIFY.md)**：涵盖命令行直接安装、Agent 一键复制 Prompt、GitHub Tag 更新、短摘要、退出码和排错。
 
 ```bash
-# 前提：先按照 QUICKSTART.md 升级到 V1.3
-python3 ~/GameAgentKit/gamekit.py migrate-drui --dry-run
-python3 ~/GameAgentKit/gamekit.py migrate-drui
-python3 ~/GameAgentKit/gamekit.py link --agents all
-python3 ~/GameAgentKit/gamekit.py doctor --agents all
-
-# 如果以前为某个游戏 attach 过，可以选择刷新其内部托管说明段，自动备份
-python3 ~/GameAgentKit/gamekit.py migrate-drui --project ~/Projects/MyGame --dry-run
-python3 ~/GameAgentKit/gamekit.py migrate-drui --project ~/Projects/MyGame
-
-# 如果以前在原 oil-ui 的 SKILL.md 中选择性追加过旧版的 GameAgentKit 扩展
-# 可显式授权刷新那一段，不动原 oil-ui 主体
-python3 ~/GameAgentKit/gamekit.py extend-oil-ui --source ~/.claude/skills/oil-ui --refresh --dry-run
-python3 ~/GameAgentKit/gamekit.py extend-oil-ui --source ~/.claude/skills/oil-ui --refresh
+git clone --depth 1 --branch v1.4.2 https://github.com/zhenv5/drui.git "$HOME/GameAgentKit"
+bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
+bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
+"$HOME/GameAgentKit/scripts/drui" verify          # 一行摘要；必须检查退出码
+"$HOME/GameAgentKit/scripts/drui" verify --verbose # 全部状态、版本和路径
+"$HOME/GameAgentKit/scripts/drui" verify --json    # 机器可读
 ```
 
-`migrate-drui` **只删除指向已确认的旧版 GameAgentKit Skill 的链接，并把旧版目录存档**；其他 Skill 和外部来源一律保留。原有项目文档仅在 `--project` 被指定时刷新，且只修改 GameAgentKit 管理的标记段。
-
+DRUI 保留已有同名用户 Skills，因此安装命令本身即使返回 0，也可能有未安装链接。**必须以最后的 verify 返回码验收**；默认四个 Agent 跨五个目录共 60 个 Skill 链接，旧别名 `--agents all` 不含 Cursor。验证本地链接并不代表 Agent 已实际加载。
 
 ## V1.4 — 严苛三方独立评审
 

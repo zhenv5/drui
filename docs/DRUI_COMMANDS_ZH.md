@@ -5,7 +5,7 @@
 
 ## V1.7：Oil UI Plus 与调用顺序
 
-UI 方法统一优先级（不代表顺序执行四次）：**`oil-ui-pro`（官方、实际已安装） > `oil-ui-plus`（GameAgentKit 原创内置） > `oil-ui`（已安装开源版） > DRUI 其他内置通用流程**。DRUI 永远负责 workflow 编排、三方独立审查及验收。详见 [`docs/UI_SOURCE_ROUTING.md`](docs/UI_SOURCE_ROUTING.md)。
+UI 方法统一优先级（不代表顺序执行四次）：**`oil-ui-pro`（官方、实际已安装） > `oil-ui-plus`（GameAgentKit 原创内置） > `oil-ui`（已安装开源版） > DRUI 其他内置通用流程**。DRUI 永远负责 workflow 编排、三方独立审查及验收。详见 [UI_SOURCE_ROUTING.md](UI_SOURCE_ROUTING.md)。
 
 ```bash
 # 查看当前可访问的 UI 方法及自动选择结果（只检测文件，不等于成功调用）
@@ -58,11 +58,25 @@ drui prompt usability-review   # 生成 Agent Prompt，不执行
 
 在不同 Agent 中，自动 Skill 发现并非绝对可靠；若输入 `drui list` 未触发，请使用 **“Use the drui skill and list its workflows”**。不能从同一会话假冒三名独立 reviewer。
 
+## 安装与验收（GitHub 源码）
+
+请先阅读 **[INSTALL_AND_VERIFY.md](INSTALL_AND_VERIFY.md)**，其中包括用户自行执行的 Git clone / install、Agent 安装 Prompt、短验证、失败返回码和排错。
+
+```bash
+bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor --dry-run
+bash "$HOME/GameAgentKit/install.sh" --agents codex,claude,antigravity,cursor
+"$HOME/GameAgentKit/scripts/drui" verify             # 短摘要，验收必须返回 0
+"$HOME/GameAgentKit/scripts/drui" verify --verbose   # 每个 Skill/版本/路径
+"$HOME/GameAgentKit/scripts/drui" verify --json      # 机器可读
+```
+
+完整四 Agent 共 5 个安装目录 × 12 个内置 Skills = **60** 项。安装器因保护用户同名 Skill 可能跳过链接而返回 0，务必再运行 verify。仅通过文件检查不意味着 Agent 已真正读取。旧别名 `--agents all` 不含 Cursor。
+
 ## 在 Mac 终端里使用（命令不会自动启动 Agent）
 
 ```bash
 # 首次安装或升级后使用 kit 链接一次（不覆盖已有同名命令）
-python3 ~/GameAgentKit/gamekit.py link --agents all
+python3 ~/GameAgentKit/gamekit.py link --agents codex,claude,antigravity,cursor
 
 # 只列清单 / 查看具体说明 / 生成执行 Prompt
 drui list
