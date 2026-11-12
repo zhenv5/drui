@@ -1,6 +1,8 @@
 # DRUI — GameAgentKit
 
-**Game UI, interaction and game-feel workflows for coding agents.** Cross-Agent · 12 bundled Skills · 20 workflows · read-only independent reviews and optional fix loops. Public name **DRUI**, internal kit **GameAgentKit**.
+**Game UI, interaction and game-feel workflows for coding agents.** Cross-Agent · 13 bundled Skills · 20 workflows · read-only independent reviews and optional fix loops. Public name **DRUI**, internal kit **GameAgentKit**.
+
+The bundle also includes the standalone [`aso-cycle`](skills/aso-cycle/SKILL.md) Skill for researching, improving and measuring Apple App Store or Google Play listings.
 
 [Quickstart](QUICKSTART.md) · [Install & Verify / 安装与验证](docs/INSTALL_AND_VERIFY.md) · [20 workflows](docs/DRUI_COMMANDS_ZH.md) · [External Skill dependency policy](docs/EXTERNAL_SKILL_UPDATES.md) · [Releases](https://github.com/zhenv5/drui/releases)
 

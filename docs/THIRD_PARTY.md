@@ -18,4 +18,4 @@ This uses that CLI's own global installation paths, not this pack's canonical ro
 
 Optional tool servers like Comfy MCP, Loopcut, or Blender integrations are **not skills**. Configure them separately for each agent; connecting a skill doesn't provide a remote model, account, token or GPU.
 
-This documentation covers optional independently owned tools, **not** DRUI's official install path. For DRUI itself use the GitHub-source [Install & Verify guide](INSTALL_AND_VERIFY.md). Its built-in 12 Skills are bundled; external skills.sh or npm commands are optional and must be reviewed separately.
+This documentation covers optional independently owned tools, **not** DRUI's official install path. For DRUI itself use the GitHub-source [Install & Verify guide](INSTALL_AND_VERIFY.md). Its built-in 13 Skills are bundled; external skills.sh or npm commands are optional and must be reviewed separately.

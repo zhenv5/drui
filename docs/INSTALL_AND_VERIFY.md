@@ -45,7 +45,7 @@ drui verify --project /path/to/game             # 额外检查项目 Skill 遮�
 DRUI v1.4.5 PASS | 4 agents | 60/60 Skill links | 0 errors, 0 warnings | runtime untested
 ```
 
-四个 Agent 共 **5 个 Skill 目录**：Codex 1、Claude Code 1、Antigravity 2、Cursor 1；各有 12 个内置 Skills，故 60/60。**`--agents all` 现在统一包含 Codex、Claude、Antigravity、Cursor 四个 Agent**。若只安装 Codex：安装命令使用 `--agents codex`，验证使用 `drui verify --agents codex`，避免错误地把未选择的三个 Agent 当作安装失败。
+四个 Agent 共 **5 个 Skill 目录**：Codex 1、Claude Code 1、Antigravity 2、Cursor 1；各有 13 个内置 Skills，故 65/65。**`--agents all` 现在统一包含 Codex、Claude、Antigravity、Cursor 四个 Agent**。若只安装 Codex：安装命令使用 `--agents codex`，验证使用 `drui verify --agents codex`，避免错误地把未选择的三个 Agent 当作安装失败。
 
 | 状态 | 含义 |
 |---|---|
